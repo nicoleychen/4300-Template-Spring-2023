@@ -10,8 +10,10 @@
     justify-content: start;
     align-items: center;
     flex-direction: column;
+    background-color: #EFE4E0;
+    overflow: auto;
 }
-/* 
+
 #color-beige{
     color:#EFE4E0;
 }
@@ -26,9 +28,9 @@
 
 #color-yellow{
     color:	#EBC47B;
-} */
+}
 
-#google-c{
+/* #google-c{
     color:#EFE4E0;
 }
 #google-s{
@@ -49,16 +51,17 @@
 
 #google-0-2{
     color:#DB4437;
-}
+} */
 
-.google-colors{
+.findMyFragrance-title{
     display: flex;
     align-items: center;
-    font-size: 48px;
+    font-size: 35px;
     font-family: 'Open Sans', sans-serif;
+    color: #F0AFAD;
 }
 
-.google-colors h1{
+.findMyFragrance-title h1{
     margin-bottom: 0;
     margin-right: 3px;
 }
@@ -66,11 +69,12 @@
 .input-box{
     border-radius: 50px;
     border:1px solid black;
-    display: flex;
+    display: inline-block;
     align-items: center;
-    margin-top: 10px;
+    margin: 10px;
     padding:12px;
-    width: 600px;
+    fill:#EFE4E0;
+    /* width: 600px; */
 }
 
 .input-box img{
@@ -92,15 +96,44 @@
     outline: 0;
 }
 
-#answer-box{
+#result-box{
     width: 700px;
-    margin-top:50px; 
+    margin-top:10px; 
+    display: flex;
+    flex-direction: column;
 }
 
-.episode-title{
+.result-heading{
+    display: flex;
+    align-items: left;
+    float: left;
+    font-size: 20px;
+    font-family: 'Open Sans', sans-serif;
+    margin: 20px;
+}
+
+.result-card{
+    background-color: white;
+    border-style: solid;
+    border-color: #F0AFAD;
+    border-width: 2px;
+    border-radius: 20px;
+    margin: 10px;
+    height: auto;
+    overflow: auto;
+}
+
+.fragrance-img{
+    width: 120px;
+    height: auto;
+    float: left;
+    padding: 20px;
+}
+
+.fragrance-name{
     font-family: 'Kanit', sans-serif;
 }
 
-.episode-desc{
+.fragrance-detail{
     font-family: 'Montserrat', sans-serif;
 }

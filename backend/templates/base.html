@@ -10,55 +10,127 @@
 <body>
   <div class="full-body-container">
     <div class="top-text">
-      <div class="google-colors">
-        <h1 id="google-c">C</h1>
-        <h1 id="google-s">S</h1>
-        <h1 id="google-4">4</h1>
-        <h1 id="google-3">3</h1>
-        <h1 id="google-0-1">0</h1>
-        <h1 id="google-0-2">0</h1>
+      <div class="findMyFragrance-title">
+        <h1 id="color-pink">FindMyFragrance</h1>
       </div>
-      <div class="input-box" onclick="sendFocus()">
-        <img src="{{ url_for('static', filename='images/mag.png') }}" />
-        <input
-          placeholder="Search for a Perfume"
+      <div>
+        <div class="input-box" onclick="sendFocus()">
+          <img src="{{ url_for('static', filename='images/mag.png') }}" />
+          <!-- <input
+          placeholder="Search for a fragrance"
           id="filter-text-val"
+          style="background-color: #efe4e0"
           onkeyup="filterText()"
+        /> -->
+          <input
+            type="text"
+            placeholder="Search for a fragrance"
+            id="search-text"
+            style="background-color: #efe4e0; width: 400px"
+          />
+        </div>
+        <input
+          type="button"
+          class="input-box"
+          id="search-button"
+          value="Find Similar Searches"
+          style="width: 150px"
         />
       </div>
     </div>
-    <div id="answer-box"></div>
+    <div id="result-box">
+      <div class="result-heading" id="result-heading-text">Search results:</div>
+    </div>
   </div>
 
   <script>
-    function answerBoxTemplate(title, titleDesc) {
-      return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
+    const button = document.getElementById('search-button')
+    console.log(button)
+    button.addEventListener('click', returnResults)
+
+    function returnResults() {
+      var query = document.getElementById('search-text').value
+
+      document.getElementById('result-heading-text').textContent =
+        'Search results similar to "' + query + '":'
+
+      // call a backend endpoint here & pass the query to retrieve the top 3 results data and store them as 'results'
+      // for now use a dummy data
+
+      results = [
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name1',
+          brand: 'Brand1',
+          notes: 'notes1, notes1, notes1, notes1',
+          desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
+        },
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name2',
+          brand: 'Brand2',
+          notes: 'notes2, notes2, notes2',
+          desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
+        },
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name3',
+          brand: 'Brand3',
+          notes: 'notes3, notes3, notes3, notes3, notes3',
+          desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
+        }
+      ]
+
+      results.forEach(res => {
+        let tempDiv = document.createElement('div')
+        tempDiv.innerHTML = resultTemplate(
+          res.img,
+          res.name,
+          res.brand,
+          res.notes,
+          res.desc
+        )
+        document.getElementById('result-box').appendChild(tempDiv)
+      })
+    }
+
+    function resultTemplate(img, name, brand, notes, desc) {
+      return `<div class='result-card'>
+                <img src=${img} class='fragrance-img'>
+                <h3 class='fragrance-name'>${name} by ${brand}</h3>
+                <p class='fragrance-detail'>Notes: ${notes}</p>
+                <p class='fragrance-detail'>Description: ${desc}</p>
             </div>`
     }
 
-    function sendFocus() {
-      document.getElementById('filter-text-val').focus()
-    }
+    // function answerBoxTemplate(title, titleDesc) {
+    //   return `<div class=''>
+    //             <h3 class='episode-title'>${title}</h3>
+    //             <p class='episode-desc'>${titleDesc}</p>
+    //         </div>`
+    // }
 
-    function filterText() {
-      document.getElementById('answer-box').innerHTML = ''
-      console.log(document.getElementById('filter-text-val').value)
-      fetch(
-        '/episodes?' +
-          new URLSearchParams({
-            title: document.getElementById('filter-text-val').value
-          }).toString()
-      )
-        .then(response => response.json())
-        .then(data =>
-          data.forEach(row => {
-            let tempDiv = document.createElement('div')
-            tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr)
-            document.getElementById('answer-box').appendChild(tempDiv)
-          })
-        )
-    }
+    // function sendFocus() {
+    //   document.getElementById('filter-text-val').focus()
+    // }
+
+    // function filterText() {
+    //   document.getElementById('answer-box').innerHTML = ''
+    //   console.log(document.getElementById('filter-text-val').value)
+    //   fetch(
+    //     '/episodes?' +
+    //       new URLSearchParams({
+    //         title: document.getElementById('filter-text-val').value
+    //       }).toString()
+    //   )
+    //     .then(response => response.json())
+    //     .then(data =>
+    //       data.forEach(row => {
+    //         let tempDiv = document.createElement('div')
+    //         tempDiv.innerHTML = answerBoxTemplate(row.title, row.descr)
+    //         document.getElementById('answer-box').appendChild(tempDiv)
+    //       })
+    //     )
+    // }
   </script>
 </body>
