@@ -60,7 +60,7 @@ def episodes_search():
     return sql_search(text)
 
 
-app.run(debug=True)
+# app.run(debug=True)
 
 
 # TODO: figure out if json is correct in importing from sql datbase
