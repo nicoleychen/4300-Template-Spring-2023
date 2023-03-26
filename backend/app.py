@@ -75,6 +75,18 @@ def episodes_search():
 # TODO: split db into data of just perfume name with notes
 
 
+#create list of dictionaries for ech perfume
+ 
+#create perfume name to index, index to name ??
+# perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
+# perfume_name_to_id = {name:pid for name, pid in zip([d['perfume_name'] for d in data],
+#                                                      [d['perfume_id'] for d in data])}
+# perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
+
+# perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
+# perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
+
+
 # def build_inverted_index(database):
 #     """ Builds an inverted index from the perfume name and notes.
 
@@ -104,3 +116,63 @@ def episodes_search():
 #                 res[note] = []
 #             res[note].append(i)
 #     return res
+
+
+#create jaccard similarity matrix 
+# def build_perf_sims_jac(n_perf, input_data):
+#     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
+#         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
+#         such that perf_sims_jac[i,j] = perf_sims_jac[j,i]. 
+    
+#     Params: {n_perf: Integer, the number of perfumes,
+#             input_data: List<Dictionary>, a list of dictionaries where each dictionary 
+#                      represents the perfume_data including the perfume and the metadata of each perfume}
+#     Returns: Numpy Array 
+#     """
+    
+#     perf_sims = np.zeros((n_perf, n_perf))
+#     for i in range(n_perf):
+#         for j in range(n_perf): 
+#             if i==j: 
+#                 perf_sims[i][j] = 1.0
+#             else: 
+#                 category_1 = set(input_data[i]["notes"])
+#                 category_2 = set(input_data[j]["notes"])
+#                 intersect = len(category_1.intersection(category_2))
+#                 union = len(category_1.union(category_2))
+#                 perf_sims[i][j] = intersect/union
+#     return perf_sims
+
+
+
+# #rank all movies, and print top 10
+# def get_ranked_movies(perfume, matrix):
+#     """
+#     Return sorted rankings (most to least similar) of perfumes as 
+#     a list of two-element tuples, where the first element is the 
+#     perfume name and the second element is the similarity score
+    
+#     Params: {perfume: String,
+#              matrix: np.ndarray}
+#     Returns: List<Tuple>
+#     """
+    
+#     # Get movie index from movie name
+#     perf_idx = perfume_name_to_index[perfume]
+    
+#     # Get list of similarity scores for movie
+#     score_lst = matrix[perf_idx]
+#     perf_score_lst = [(perf_index_to_name[i], s) for i,s in enumerate(score_lst)]
+    
+#     # Do not account for movie itself in ranking
+#     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
+    
+#     # Sort rankings by score
+#     perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
+
+#     print("Top {} most similar movies to {} [{}]".format(k, 'star wars', sim_type))
+#     print("======")
+#     for (mov, score) in mov_score_lst[:10]:
+#         print("%.3f %s" % (score, mov))
+
+
