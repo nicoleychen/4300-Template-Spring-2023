@@ -12,28 +12,20 @@
     flex-direction: column;
 }
 
-#google-c{
-    color:#4285F4;
+#color-beige{
+    color:#EFE4E0;
 }
 
-#google-s{
-    color:#DB4437;
+#color-pink{
+    color:#F0AFAD;
 }
 
-#google-4{
-    color:	#F4B400;
+#color-red{
+    color:	#E35A60;
 }
 
-#google-3{
-    color:	#4285F4;
-}
-
-#google-0-1{
-    color:	#0F9D58;
-}
-
-#google-0-2{
-    color:#DB4437;
+#color-yellow{
+    color:	#EBC47B;
 }
 
 .google-colors{

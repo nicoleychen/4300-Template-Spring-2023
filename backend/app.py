@@ -25,7 +25,7 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_USER_PASSWORD = os.getenv('MYSQL_USER_PASSWORD')
 MYSQL_PORT = 3306
-MYSQL_DATABASE = "kaggleperfumedb"
+MYSQL_DATABASE = "kardashiandb"
 
 mysql_engine = MySQLDatabaseHandler(
     MYSQL_USER, MYSQL_USER_PASSWORD, MYSQL_PORT, MYSQL_DATABASE)
@@ -50,7 +50,7 @@ def sql_search(episode):
 
 @app.route("/")
 def home():
-    return render_template('base.html', title="sample html")
+    return render_template('page1.html', title="sample html")
 
 
 @app.route("/episodes")
@@ -58,7 +58,7 @@ def episodes_search():
     text = request.args.get("title")
     return sql_search(text)
 
-# app.run(debug=True)
+app.run(debug=True)
 
 
 # TODO: figure out if json is correct in importing from sql datbase
@@ -66,39 +66,39 @@ def episodes_search():
 #      so changing the dtabase connection ports in app.py to my root would work for me, but it doesn't work for you guys i don't think
 
 # TODO: maybe for now use csv file format initially?
-with open("perfume-data.json") as f:
-    perfumes = json.load(f)
+# with open("perfume-data.json") as f:
+#     perfumes = json.load(f)
 
 
 # TODO: split db into data of just perfume name with notes
 
 
-def build_inverted_index(database):
-    """ Builds an inverted index from the perfume name and notes.
+# def build_inverted_index(database):
+#     """ Builds an inverted index from the perfume name and notes.
 
-    Arguments
-    =========
+#     Arguments
+#     =========
 
-    database: list of dicts.
-        Each perfume in this list already has a 'notes'
-        field that contains the tokenized notes.
+#     database: list of dicts.
+#         Each perfume in this list already has a 'notes'
+#         field that contains the tokenized notes.
 
-    Returns
-    =======
+#     Returns
+#     =======
 
-    inverted_index: dict
-        For each note, the index contains 
-        a list of that stores all the perfume_id with that note.
-        inverted_index[note] = [p1, p2, p3]
+#     inverted_index: dict
+#         For each note, the index contains 
+#         a list of that stores all the perfume_id with that note.
+#         inverted_index[note] = [p1, p2, p3]
 
-    """
-    res = {}
-    for i in range(len(database)):
-        id = database[i]
-        notes = database['perfume_notes']
-        notes_set = set(notes)
-        for note in notes_set:
-            if note not in res:
-                res[note] = []
-            res[note].append(i)
-    return res
+#     """
+#     res = {}
+#     for i in range(len(database)):
+#         id = database[i]
+#         notes = database['perfume_notes']
+#         notes_set = set(notes)
+#         for note in notes_set:
+#             if note not in res:
+#                 res[note] = []
+#             res[note].append(i)
+#     return res
