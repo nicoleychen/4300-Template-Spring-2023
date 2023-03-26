@@ -50,13 +50,14 @@ def sql_search(episode):
 
 @app.route("/")
 def home():
-    return render_template('page1.html', title="sample html")
+    return render_template('base.html', title="sample html")
 
 
 @app.route("/episodes")
 def episodes_search():
     text = request.args.get("title")
     return sql_search(text)
+
 
 app.run(debug=True)
 
@@ -87,7 +88,7 @@ app.run(debug=True)
 #     =======
 
 #     inverted_index: dict
-#         For each note, the index contains 
+#         For each note, the index contains
 #         a list of that stores all the perfume_id with that note.
 #         inverted_index[note] = [p1, p2, p3]
 
