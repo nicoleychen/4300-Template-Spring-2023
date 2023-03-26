@@ -11,7 +11,7 @@
     align-items: center;
     flex-direction: column;
 }
-
+/* 
 #color-beige{
     color:#EFE4E0;
 }
@@ -26,7 +26,7 @@
 
 #color-yellow{
     color:	#EBC47B;
-}
+} */
 
 #google-c{
     color:#4285F4;
@@ -51,7 +51,7 @@
     color:#DB4437;
 }
 
-.findMyFragranceText{
+.google-colors{
     display: flex;
     align-items: center;
     font-size: 48px;
