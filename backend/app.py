@@ -26,7 +26,7 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_USER_PASSWORD = os.getenv('MYSQL_USER_PASSWORD')
 MYSQL_PORT = 3306
-MYSQL_DATABASE = "kardashiandb"
+MYSQL_DATABASE = "findmyfragrance_db"
 
 mysql_engine = MySQLDatabaseHandler(
     MYSQL_USER, MYSQL_USER_PASSWORD, MYSQL_PORT, MYSQL_DATABASE)
