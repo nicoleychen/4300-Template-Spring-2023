@@ -49,9 +49,9 @@ CORS(app)
 #     return json.dumps([dict(zip(keys, i)) for i in data])
 
 
-# @app.route("/")
-# def home():
-#     return render_template('base.html', title="sample html")
+@app.route("/")
+def home():
+    return render_template('base.html', title="sample html")
 
 
 # @app.route("/episodes")
