@@ -35,6 +35,7 @@ services:
     networks:
       - flask_network
 volumes:
-  flask_volume: /var/lib/mysql
+  flask_volume:
+    driver: local
 networks:
   flask_network:
