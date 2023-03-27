@@ -23,7 +23,7 @@ services:
     command: gunicorn --bind 0.0.0.0:5000 --workers 4 "app:app"
   db:
     container_name: ${TEAM_NAME}_db
-    image: mysql:latest
+    image: mariadb:10.5.8
     restart: always
     environment:
       MYSQL_USER: admin
@@ -35,6 +35,6 @@ services:
     networks:
       - flask_network
 volumes:
-  flask_volume:
+  flask_volume: /var/lib/mysql
 networks:
   flask_network:
