@@ -62,50 +62,50 @@
       // .then(response) => response.json())
       // .then(move the results.foreach here);
 
-      fetch("/similar?" + new URLSearchParams({ title: query }).toString())
-            .then((response) => response.json())
-            .then((data) => data.forEach(row => {
+      // fetch("/similar?" + new URLSearchParams({ title: query }).toString())
+      //       .then((response) => response.json())
+      //       .then((data) => data.forEach(row => {
                 
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.name,row.brand,row.description)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
+      //           let tempDiv = document.createElement("div")
+      //           tempDiv.innerHTML = answerBoxTemplate(row.name,row.brand,row.description)
+      //           document.getElementById("answer-box").appendChild(tempDiv)
+      //       }));
 
-      // results = [
-      //   {
-      //     img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-      //     name: 'Name1',
-      //     brand: 'Brand1',
-      //     notes: 'notes1, notes1, notes1, notes1',
-      //     desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
-      //   },
-      //   {
-      //     img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-      //     name: 'Name2',
-      //     brand: 'Brand2',
-      //     notes: 'notes2, notes2, notes2',
-      //     desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
-      //   },
-      //   {
-      //     img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-      //     name: 'Name3',
-      //     brand: 'Brand3',
-      //     notes: 'notes3, notes3, notes3, notes3, notes3',
-      //     desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
-      //   }
-      // ]
+      results = [
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name1',
+          brand: 'Brand1',
+          notes: 'notes1, notes1, notes1, notes1',
+          desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
+        },
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name2',
+          brand: 'Brand2',
+          notes: 'notes2, notes2, notes2',
+          desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
+        },
+        {
+          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+          name: 'Name3',
+          brand: 'Brand3',
+          notes: 'notes3, notes3, notes3, notes3, notes3',
+          desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
+        }
+      ]
 
-      // results.forEach(res => {
-      //   let tempDiv = document.createElement('div')
-      //   tempDiv.innerHTML = resultTemplate(
-      //     res.img,
-      //     res.name,
-      //     res.brand,
-      //     res.notes,
-      //     res.desc
-      //   )
-      //   document.getElementById('result-box').appendChild(tempDiv)
-      // })
+      results.forEach(res => {
+        let tempDiv = document.createElement('div')
+        tempDiv.innerHTML = resultTemplate(
+          res.img,
+          res.name,
+          res.brand,
+          res.notes,
+          res.desc
+        )
+        document.getElementById('result-box').appendChild(tempDiv)
+      })
     }
 
     function resultTemplate(img, name, brand, notes, desc) {
