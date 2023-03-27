@@ -69,7 +69,7 @@ def sql_search(perfume):
 @app.route("/similar")
 def similar_search():
     query = request.args.get("name")
-    pass
+    return sql_search(query)
 
 
 # # TODO: add def
