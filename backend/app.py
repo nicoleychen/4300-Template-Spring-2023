@@ -77,112 +77,114 @@ def similar_search():
 #     perfumes = json.load(f)
 # TODO: split db into data of just perfume name with notes
 # create list of dictionaries for ech perfume
-# def create_dict(database):
-# """
-# form of output: {perfume name: {brand:____, notes:____, description:____}, perfume name 2: {}....}
-# """
-#     final = []
-#     perf_dict = {}
-# inner_dict = {}
-#     for row in database:
-#         inner_dict["brand"] = row["Brand"]
-#         inner_dict["description"] = row["Description"]
-#         inner_dict["notes"] = row["Notes"]
-# perf_dict[row["Name"]] = inner_dict
-#     final.append(perf_dict)
-# create perfume name to index, index to name ??
-# perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
-# perfume_name_to_id = {name:pid for name, pid in zip([d['Name'] for d in data],
-#                                                      [d['perfume_id'] for d in data])}
-# perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
-# perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
-# perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
-# perfume_names = [name for name in [d['perfume_name'] for d in data]]
-# get query perfume
-# def check_query(input_query)
-# query = input_query.lower()
-# if query in perfume_names:
-#     return query
-# else:
-#     return "Sorry, no results found".
-# query_perfume = check_query(query)
-# def build_inverted_index(database):
-#     """ Builds an inverted index from the perfume name and notes.
-#     Arguments
-#     =========
-#     database: list of dicts.
-#         Each perfume in this list already has a 'notes'
-#         field that contains the tokenized notes.
-#     Returns
-#     =======
-#     inverted_index: dict
-#         For each note, the index contains
-#         a list of that stores all the perfume_id with that note.
-#         inverted_index[note] = [p1, p2, p3]
-#     """
-#     res = {}
-#     for i in range(len(database)):
-#         id = database[i]
-#         notes = database['perfume_notes']
-#         notes_set = set(notes)
-#         for note in notes_set:
-#             if note not in res:
-#                 res[note] = []
-#             res[note].append(i)
-#     return res
+def create_dict(database):
+"""
+form of output: {perfume name: {brand:____, notes:____, description:____}, perfume name 2: {}....}
+"""
+    final = []
+    perf_dict = {}
+    inner_dict = {}
+    for row in database:
+        inner_dict["brand"] = row["Brand"]
+        inner_dict["description"] = row["Description"]
+        inner_dict["notes"] = row["Notes"]
+        perf_dict[row["Name"]] = inner_dict
+        final.append(perf_dict)
+#create perfume name to index, index to name ??
+    perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
+    perfume_name_to_id = {name:pid for name, pid in zip([d['Name'] for d in data], [d['perfume_id'] for d in data])}
+    perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
+    perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
+    perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
+    perfume_names = [name for name in [d['perfume_name'] for d in data]]
+    get query perfume
+def check_query(input_query)
+    query = input_query.lower()
+    if query in perfume_names:
+        return query
+    else:
+        return "Sorry, no results found".
+    query_perfume = check_query(query)
+
+def build_inverted_index(database):
+    """ Builds an inverted index from the perfume name and notes.
+    Arguments
+    =========
+    database: list of dicts.
+        Each perfume in this list already has a 'notes'
+        field that contains the tokenized notes.
+    Returns
+    =======
+    inverted_index: dict
+        For each note, the index contains
+        a list of that stores all the perfume_id with that note.
+        inverted_index[note] = [p1, p2, p3]
+    """
+    res = {}
+    for i in range(len(database)):
+        id = database[i]
+        notes = database['perfume_notes']
+        notes_set = set(notes)
+        for note in notes_set:
+            if note not in res:
+                res[note] = []
+            res[note].append(i)
+    return res
+
 # create jaccard similarity matrix
-# def build_perf_sims_jac(n_perf, input_data):
-#     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
-#         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
-#         such that perf_sims_jac[i,j] = perf_sims_jac[j,i].
-#     Params: {n_perf: Integer, the number of perfumes,
-#             input_data: List<Dictionary>, a list of dictionaries where each dictionary
-#                      represents the perfume_data including the perfume and the metadata of each perfume}
-#     Returns: Numpy Array
-#     """
-#     perf_sims = np.zeros((n_perf, n_perf))
-#     for i in range(n_perf):
-#         for j in range(n_perf):
-#             if i==j:
-#                 perf_sims[i][j] = 1.0
-#             else:
-#                 category_1 = set(input_data[i]["notes"])
-#                 category_2 = set(input_data[j]["notes"])
-#                 intersect = len(category_1.intersection(category_2))
-#                 union = len(category_1.union(category_2))
-#                 perf_sims[i][j] = intersect/union
-#     return perf_sims
+def build_perf_sims_jac(n_perf, input_data):
+    """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
+        [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
+        such that perf_sims_jac[i,j] = perf_sims_jac[j,i].
+    Params: {n_perf: Integer, the number of perfumes,
+            input_data: List<Dictionary>, a list of dictionaries where each dictionary
+                     represents the perfume_data including the perfume and the metadata of each perfume}
+    Returns: Numpy Array
+    """
+    perf_sims = np.zeros((n_perf, n_perf))
+    for i in range(n_perf):
+        for j in range(n_perf):
+            if i==j:
+                perf_sims[i][j] = 1.0
+            else:
+                category_1 = set(input_data[i]["notes"])
+                category_2 = set(input_data[j]["notes"])
+                intersect = len(category_1.intersection(category_2))
+                union = len(category_1.union(category_2))
+                perf_sims[i][j] = intersect/union
+    return perf_sims
 # #rank all movies, and return top 3
-# def get_ranked_movies(perfume, matrix):
-#     """
-#     Return sorted rankings (most to least similar) of perfumes as
-#     a list of two-element tuples, where the first element is the
-#     perfume name and the second element is the similarity score
-#     Params: {perfume: String,
-#              matrix: np.ndarray}
-#     Returns: List<Tuple>
-#     """
-#     # Get movie index from movie name
-#     perf_idx = perfume_name_to_index[perfume]
-#     # Get list of similarity scores for movie
-#     score_lst = matrix[perf_idx]
-#     perf_score_lst = [(perf_index_to_name[i], s) for i,s in enumerate(score_lst)]
-#     # Do not account for movie itself in ranking
-#     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
-#     # Sort rankings by score
-#     perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
-#     print("Top {} most similar movies to {} [{}]".format(k, 'star wars'))
-#     print("======")
-#     for (mov, score) in perf_score_lst[:3]:
-#         print("%.3f %s" % (score, mov))
-# return top_3 = perf_score_lst[:3]
+def get_ranked_movies(perfume, matrix):
+    """
+    Return sorted rankings (most to least similar) of perfumes as
+    a list of two-element tuples, where the first element is the
+    perfume name and the second element is the similarity score
+    Params: {perfume: String,
+             matrix: np.ndarray}
+    Returns: List<Tuple>
+    """
+    # Get movie index from movie name
+    perf_idx = perfume_name_to_index[perfume]
+    # Get list of similarity scores for movie
+    score_lst = matrix[perf_idx]
+    perf_score_lst = [(perf_index_to_name[i], s) for i,s in enumerate(score_lst)]
+    # Do not account for movie itself in ranking
+    perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
+    # Sort rankings by score
+    perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
+    print("Top {} most similar movies to {} [{}]".format(k, 'star wars'))
+    print("======")
+    for (mov, score) in perf_score_lst[:3]:
+        print("%.3f %s" % (score, mov))
+    return top_3 = perf_score_lst[:3]
+
 # get the necessary information
-# def results(top_3, input_dict):
-#     """
-#         Take in list of top 3 movies and get the correspoiding info
-# input_dict: list of dictionaries for each perfume - perf_dict
-#     """
-# dicts = []
-#     for i in top 3:
-# dicts.append(input_dict[i])
-# return dicts
+def results(top_3, input_dict):
+    """
+        Take in list of top 3 movies and get the correspoiding info
+    input_dict: list of dictionaries for each perfume - perf_dict
+        """
+    dicts = []
+        for i in top 3:
+    dicts.append(input_dict[i])
+    return dicts
