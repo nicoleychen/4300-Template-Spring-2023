@@ -113,6 +113,7 @@ def perfume_index_to_name(db):
     {v:k for k,v in perfume_name_to_index.items()}
 
 # get query perfume
+@app.route("/querycheck")
 def check_query(input_query, perfume_db):
     query = input_query.lower()
     perfume_names = get_perfume_names(perfume_db)
