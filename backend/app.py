@@ -51,8 +51,7 @@ def sql_search(query):
 # TODO: add a new route
 @app.route("/similar")
 def similar_search():
-    # query = request.args.get("name")
-    query = "00 Auriel Eau de Parfum"
+    query = request.args.get("name")
     return sql_search(query)
 
 @app.route("/")
