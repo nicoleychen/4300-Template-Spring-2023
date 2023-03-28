@@ -1,6 +1,6 @@
 # from IPython.core.display import HTML
 # from nltk.tokenize import TreebankWordTokenizer
-# import numpy as np
+import numpy as np
 # import time
 # import string
 # import math
@@ -26,13 +26,13 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..", os.curdir))
 MYSQL_USER = os.getenv('MYSQL_USER')
 MYSQL_USER_PASSWORD = os.getenv('MYSQL_USER_PASSWORD')
 MYSQL_PORT = 3306
-MYSQL_DATABASE = "findmyfragrance_db"
+MYSQL_DATABASE = "perfumedb"
 
 mysql_engine = MySQLDatabaseHandler(
     MYSQL_USER, MYSQL_USER_PASSWORD, MYSQL_PORT, MYSQL_DATABASE)
 
 # Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
-mysql_engine.load_file_into_db()
+# mysql_engine.load_file_into_db()
 
 app = Flask(__name__)
 CORS(app)
@@ -42,31 +42,35 @@ CORS(app)
 # there's a much better and cleaner way to do this
 
 
-def sql_search(query):
-    query_sql = f"""SELECT * FROM perfumes WHERE LOWER( name ) LIKE '%%{query.lower()}%%' limit 3"""
-    keys = ["name", "brand", "description", "notes", "imageURL"]
+def sql_search(episode):
+    query_sql = f"""SELECT * FROM episodes WHERE LOWER( title ) LIKE '%%{episode.lower()}%%' limit 10"""
+    keys = ["id", "title", "descr"]
     data = mysql_engine.query_selector(query_sql)
     return json.dumps([dict(zip(keys, i)) for i in data])
 
-# TODO: add a new route
-@app.route("/similar")
-def similar_search():
-    query = request.args.get("name")
-    return sql_search(query)
 
 @app.route("/")
 def home():
     return render_template('base.html', title="sample html")
 
 
-# @app.route("/episodes")
-# def episodes_search():
-#     text = request.args.get("title")
-#     return sql_search(text)
+@app.route("/episodes")
+def episodes_search():
+    text = request.args.get("title")
+    return sql_search(text)
+
+
+# TODO: add a new route
+@app.route("/similar")
+def similar_search():
+    query = request.args.get("name")
+    pass
 
 
 # TODO: add def
 # app.run(debug=True)
+
+
 # TODO: figure out if json is correct in importing from sql datbase
 # TODO: figure out how to connect to sql and import sql database --> i think data is on my personal database connection
 #      so changing the dtabase connection ports in app.py to my root would work for me, but it doesn't work for you guys i don't think
@@ -88,8 +92,10 @@ def perfume_sql_search():
         db[i]['perfume_id'] = i
     return db
 
+
 def get_perfume_db():
     return perfume_sql_search()
+
 
 def get_perfume_names(db):
     names = set()
@@ -97,27 +103,39 @@ def get_perfume_names(db):
         names.add(i['name'])
     return names
 
-def perfume_id_to_index(db):
-    return {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in db])}
 
-def perfume_name_to_id(db): 
-    return {name:pid for name, pid in zip([d['name'] for d in db],
-                                                     [d['perfume_id'] for d in db])}
+def perfume_id_to_index(db):
+    return {perfume_id: index for index, perfume_id in enumerate([d['perfume_id'] for d in db])}
+
+
+def perfume_name_to_id(db):
+    return {name: pid for name, pid in zip([d['name'] for d in db],
+                                           [d['perfume_id'] for d in db])}
+
+
 def perfume_id_to_name(db):
-    return {v:k for k,v in perfume_name_to_id.items()}
+    return {v: k for k, v in perfume_name_to_id.items()}
+
+
 def perfume_name_to_index(db):
-    {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['name'] for d in db]}
+    {name: perfume_id_to_index[perfume_name_to_id[name]]
+        for name in [d['name'] for d in db]}
+
+
 def perfume_index_to_name(db):
-    {v:k for k,v in perfume_name_to_index.items()}
+    {v: k for k, v in perfume_name_to_index.items()}
 
 # get query perfume
-def check_query(input_query):
+
+
+def check_query(input_query, perfume_db):
     query = input_query.lower()
-    perfume_names = get_perfume_names(get_perfume_db())
+    perfume_names = get_perfume_names(perfume_db)
     if query in perfume_names:
         return query
     else:
         return "Sorry, no results found. Check your spelling or try a different perfume."
+
 
 def build_inverted_index(database):
     """ Builds an inverted index from the perfume name and notes.
@@ -144,6 +162,7 @@ def build_inverted_index(database):
             res[note].append(i)
     return res
 
+
 def build_perf_sims_jac(n_perf, input_data):
     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
@@ -156,7 +175,7 @@ def build_perf_sims_jac(n_perf, input_data):
     perf_sims = np.zeros((n_perf, n_perf))
     for i in range(n_perf):
         for j in range(n_perf):
-            if i==j:
+            if i == j:
                 perf_sims[i][j] = 1.0
             else:
                 category_1 = set(input_data[i]["notes"])
@@ -166,7 +185,9 @@ def build_perf_sims_jac(n_perf, input_data):
                 perf_sims[i][j] = intersect/union
     return perf_sims
 
-#rank all perfumes, and return top 3
+# rank all perfumes, and return top 3
+
+
 def get_ranked_perfumes(perfume, matrix, perf_index_to_name):
     """
     Return top 3 of sorted rankings (most to least similar) of perfumes as
@@ -181,7 +202,8 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_name):
     perf_idx = perfume_name_to_index[perfume]
     # Get list of similarity scores for movie
     score_lst = matrix[perf_idx]
-    perf_score_lst = [(perf_index_to_name[i], s) for i,s in enumerate(score_lst)]
+    perf_score_lst = [(perf_index_to_name[i], s)
+                      for i, s in enumerate(score_lst)]
     # Do not account for movie itself in ranking
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
     # Sort rankings by score
@@ -189,6 +211,8 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_name):
     return perf_score_lst[:3]
 
 # get the necessary information
+
+
 def results(top_3, input_dict):
     """
         Take in list of top 3 perfumes and get the corresponding info
@@ -200,39 +224,31 @@ def results(top_3, input_dict):
     return dicts
 
 
-
-
-
-
-# def create_dict(database):
-# # """
-# # form of output: {perfume name: {brand:____, notes:____, description:____}, perfume name 2: {}....}
-# # """
 #     final = []
 #     perf_dict = {}
-#     inner_dict = {}
+# inner_dict = {}
 #     for row in database:
 #         inner_dict["brand"] = row["Brand"]
 #         inner_dict["description"] = row["Description"]
 #         inner_dict["notes"] = row["Notes"]
-#         perf_dict[row["Name"]] = inner_dict
-#         final.append(perf_dict)
-# #create perfume name to index, index to name ??
-#     perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
-#     perfume_name_to_id = {name:pid for name, pid in zip([d['Name'] for d in data], [d['perfume_id'] for d in data])}
-#     perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
-#     perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
-#     perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
-#     perfume_names = [name for name in [d['perfume_name'] for d in data]]
-#     get query perfume
+# perf_dict[row["Name"]] = inner_dict
+#     final.append(perf_dict)
+# create perfume name to index, index to name ??
+# perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
+# perfume_name_to_id = {name:pid for name, pid in zip([d['Name'] for d in data],
+#                                                      [d['perfume_id'] for d in data])}
+# perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
+# perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
+# perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
+# perfume_names = [name for name in [d['perfume_name'] for d in data]]
+# get query perfume
 # def check_query(input_query)
-#     query = input_query.lower()
-#     if query in perfume_names:
-#         return query
-#     else:
-#         return "Sorry, no results found".
-#     query_perfume = check_query(query)
-
+# query = input_query.lower()
+# if query in perfume_names:
+#     return query
+# else:
+#     return "Sorry, no results found".
+# query_perfume = check_query(query)
 # def build_inverted_index(database):
 #     """ Builds an inverted index from the perfume name and notes.
 #     Arguments
@@ -257,8 +273,7 @@ def results(top_3, input_dict):
 #                 res[note] = []
 #             res[note].append(i)
 #     return res
-
-# # create jaccard similarity matrix
+# create jaccard similarity matrix
 # def build_perf_sims_jac(n_perf, input_data):
 #     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
 #         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
@@ -280,7 +295,7 @@ def results(top_3, input_dict):
 #                 union = len(category_1.union(category_2))
 #                 perf_sims[i][j] = intersect/union
 #     return perf_sims
-# # #rank all movies, and return top 3
+# #rank all movies, and return top 3
 # def get_ranked_movies(perfume, matrix):
 #     """
 #     Return sorted rankings (most to least similar) of perfumes as
@@ -303,15 +318,14 @@ def results(top_3, input_dict):
 #     print("======")
 #     for (mov, score) in perf_score_lst[:3]:
 #         print("%.3f %s" % (score, mov))
-#     return top_3 = perf_score_lst[:3]
-
-# # get the necessary information
+# return top_3 = perf_score_lst[:3]
+# get the necessary information
 # def results(top_3, input_dict):
 #     """
 #         Take in list of top 3 movies and get the correspoiding info
-#     input_dict: list of dictionaries for each perfume - perf_dict
-#         """
-#     dicts = []
-#         for i in top 3:
-#     dicts.append(input_dict[i])
-#     return dicts
+# input_dict: list of dictionaries for each perfume - perf_dict
+#     """
+# dicts = []
+#     for i in top 3:
+# dicts.append(input_dict[i])
+# return dicts

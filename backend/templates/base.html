@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<title>{% block title %}{% endblock %} FindMyFragrance </title>
+<title>{% block title %}{% endblock %} FindMyFragrance</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +14,7 @@
         <h1 id="color-pink">FindMyFragrance</h1>
       </div>
       <div>
-        <div class="input-box" onclick="sendFocus()">
+        <div class="input-box">
           <img src="{{ url_for('static', filename='images/mag.png') }}" />
           <!-- <input
           placeholder="Search for a fragrance"
@@ -47,7 +47,6 @@
     const button = document.getElementById('search-button')
     console.log(button)
     button.addEventListener('click', returnResults)
-    
 
     function returnResults() {
       var query = document.getElementById('search-text').value
@@ -55,28 +54,170 @@
       document.getElementById('result-heading-text').textContent =
         'Perfumes similar to "' + query + '":'
 
+      let results = []
+
       // todo: call a backend endpoint here & pass the query to retrieve the top 3 results data and store them as 'results'
       // for now use a dummy data
 
-    //   fetch("/similar?" + new URLSearchParams({ title: query }).toString())
-    //   .then((response) => response.json())
-    //   .then(results.forEach(res => {
+      //   fetch("/similar?" + new URLSearchParams({ title: query }).toString())
+      //   .then((response) => response.json())
+      //   .then(results.forEach(res => {
 
-    //     let tempDiv = document.createElement('div')
-    //     tempDiv.innerHTML = resultTemplate(
-    //       res.img,
-    //       res.name,
-    //       res.brand,
-    //       res.notes,
-    //       res.desc)
-    //     document.getElementById('result-box').appendChild(tempDiv)
-    // }));
+      //     let tempDiv = document.createElement('div')
+      //     tempDiv.innerHTML = resultTemplate(
+      //       res.img,
+      //       res.name,
+      //       res.brand,
+      //       res.notes,
+      //       res.desc)
+      //     document.getElementById('result-box').appendChild(tempDiv)
+      // }));
 
       // pseudocode
       // fetch("/similar?" + new URLSearchParams({ title: query }).toString())
       // .then(response) => response.json())
       // .then(move the results.foreach here);
-      
+
+      if (query == 'Eau Rose') {
+        // example 1
+        results = [
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Rose 31 Eau de Parfum',
+            brand: 'Le Labo',
+            notes:
+              ' Grasse rose, cumin, pepper, clove, nutmeg, olibanum, cedar, amber, gaiac wood, oud, cistus, vetiver and animalic notes',
+            desc: ' A rose for men destined to be stolen by women, Rose 31 takes the most feminine of all notes, darkens, dries and spicies it up turning it into a veritable emblem of masculinity.  Mesmerizingly ambiguous, the fragrance alternates between the floral and the spicy with a generous dose of the woody and the animalic thrown in for good measure.  The striking, elegantly austere beginning of Rose 31 gives way to the sweet, spicy star note of rose accompanied by fiery spices, pepper, clove and nutmeg. The naughty hint of cumin in the heart of the scent is a prologue to the sensual base of oud and vetiver. Dark, dangerous and sublimely refined, this is one of our favorite Rose perfumes of all time.'
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: '1 Parfum Extrait',
+            brand: 'Puredistance',
+            notes:
+              'Fresh tangerine blossom, cassis, neroli bigarade, magnolia, rose wardia, jasmine, natural mimosa, sweet amber, vetiver, white musk',
+            desc: "One of the world's most exclusive fragrances, Puredistance I was created by a renowned perfumer Annie Buzantian. The story goes that this luminous green floral with a mouthwatering tease of black currant was originally Buzantian's own perfume... the perfumer's own scent sets high expectations and does not disappoint! Built on the play of the soft and the crisp, the warm and the cold, the fruity flirtiness and the floral elegance, the aroma is as complex and as polished as the most precious diamond. The citrus blossoms let the cool breeze into the luscious blend of jasmine and mimosa. The very delicate fruity accord in the top is carried on in the heart of the scent by the ever feminine note of magnolia. The graceful earthiness of vetiver in the base enhances the green quality of the blend, while musk and amber add warmth and sensuality to the dazzlingly pristine atmosphere of the composition. With its impeccable proportions and sublime, multifaceted beauty, Puredistance I is destined to become a modern class"
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: '10 Corso Como Eau de Parfum',
+            brand: '10 Corso Como',
+            notes:
+              'sandalwood, frankincense, musk, rose, geranium, vetiver and rare Malay oud wood oil',
+            desc: "10 Corso Como is exotic sensuality, the meeting of the arcane and the new. It's a clean, warm sandalwood with a touch of churchy frankincense and an ingredient so expensive, so precious, so rare that we dare not speak its name but once. This is not your local headshop's version of sandalwood, so forget about multi-colored dancing bears and hookahs; 10 Corso Como's mystery is rooted in one of the most ancient of all incenses, yet it remains light on the skin, exuding a scent both delicate and intensely spiritual. Without a single ad campaign, 10 Corso Como has attracted so many crazed worshippers in Europe that some buy the bottles by the dozen. Welcome to paradise"
+          }
+        ]
+      } else if (query == 'Bath and Body Works Green Apple') {
+        // example 2
+        results = []
+      } else if (query == 'Blackberry Woods Eau de Parfum') {
+        // example 3
+        results = [
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Room Service Eau de Parfum',
+            brand: 'Vilhelm Parfumerie',
+            notes:
+              ' mandarin nectar, blackberry, pink orchid, bamboo, violet, black amber, musk, sandalwood',
+            desc: " Picture this: Greta Garbo at Carlyle – a superstar who chose herself above Hollywood's siren song. Alone in her hotel room, attired in a drift of satin and poignant allure, waiting for her ultimate luxury: a bath of flower petals, the warm water releasing this collision of citrus and red fruits, bamboo, violet, black amber and sandalwood. What We Think Juicy and lush, but with a decidedly un-sweet sophistication, this is a fruity floral with a grown-up sexiness."
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Riviera Lazuli Eau de Parfum',
+            brand: 'Atelier des Ors',
+            notes:
+              '  Lemon, cypress, bergamot, clary sage, cedar, gaiac, immortelle, fir balsam, incense',
+            desc: " The warmest and richest of Atelier des Ors' Riviera trilogy, Riviera Lazuli is blissful blend of tart citrus and robust wood with a slow transition into a glowingly warm incense resin that evokes an unforgettable sunset over the azure waters of the Mediterranean. The outstanding citrus notes that have defined all three scents is still here, bright, juicy and robust, with a characteristically energetic spray of saltwater, but while a complement of aromatic woods is still present and vibrant, Riviera Lazuli moves in a duskier direction, with incense and and hints of dried immortelle providing warmth and a touch of caramel-inflected spice. Balsam adds an even warmer element, evoking sun-heated driftwood and the glow of sunset on skin. It's a perfect memory at the end of a beautiful day- a scent of wholesome indulgence and pure satisfaction you won't ever forget."
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Escale En Indonesie Eau De Cologne',
+            brand: 'Les Indemodables',
+            notes:
+              ' Bergamot, lemon, neroli, Indonesian ambergris, jasmine, sandalwood',
+            desc: " Perhaps the most classic of all scents, the \"L'eau de Cologne\" style stays perpetually in fashion because of its wonderful simplicity. Featuring a lighter concentration that puts its emphasis on freshness and wearability, an EDC can actually be an ideal format to showcase exquisite natural materials in high concentrations that might feel overwhelming as part of a richer, more busy perfume.With Escale En Indonesie, Les Indemodables has chosen to showcase a spectacular specimen of one of the most precious materials in all of perfumery- ambergris. Recovered from the paradise of Sumatra, Indonesia, this top-graded white ambergris was painstakingly distilled into a \"Grand Cru\" tincture, broken down with state-of-the-art ultrasound and then carefully tinctured for over six months to achieve a sublime level of complexity. Every possible facet of this fabled material- vivid ozonic tones, sensual animalics, and electric saltiness- are fully presented, delivering a depth and longevity that are rare for an eau de cologne. And a suite of carefully chosen complementary notes add more EDC freshness- a sunny sparkle of Calabrian bergamot and Sicilian lemon combine with a green, floral freshness from Moroccan neroli oil. Each note teases out even more complexity from the ambergris, which feels as bright and refreshing as the citrus opening but soon gains creamy, seductive tonality from a smooth jasmine and sandalwood base. Don't worry if this sounds a bit heavy for an EDC, as it's delivered with a wonderfully light touch that makes it oh so wearable. But if you've ever wanted a scent that harnessed the true power of ambergris while also maintaining delightful everyday wearability, don't let this hidden gem pass you by."
+          }
+        ]
+      } else if (query == 'A Blvd. Called Sunset Eau de Parfum') {
+        // example 4
+        results = [
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Rozu Eau de Parfum',
+            brand: 'Aesop',
+            notes: ' Rose, shiso, guaiac',
+            desc: "The beauty of Aesop fragrances lies in their ability to elegantly balance between sophistication and naturalism- an Aesop scent is gorgeously refined, yet possessed with an unmistakable and primal connection to the raw materials from which it was created. So it shouldn't surprise anyone to hear that their foray into rose scents is no delicate young flower, but a lush, gorgeously green wild rose with vibrant shiso accords, woods and spice, and a light touch of sophisticated smoke. The rose note is sumptuously romantic, with enough floral fullness to make any rose lover swoon, but the eastern influence of the aromatics and guaiac wood impart a soulful spirituality that set Rozu apart. A beautiful floral that's every bit an Aesop scent, Rozu is a must try for rose lovers."
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Eau de Cuisine Eau de Parfum',
+            brand: 'Hilde Soliani',
+            notes:
+              'ocean, apricot, almond, fresh dairy, aromatic herbs, spices',
+            desc: "We've always known Hilde Soliani makes the most mouthwatering sweet scents out there, but being \"The Queen Of Gourmand\" doesn't begin and end with dessert. Eau de Cuisine, her tribute to longtime friend and renowned modern Italian chef Paolo Lo Priore, is a glorious main course of a fragrance, a spicy, savory, salty feast for the senses. A tribute to Chef Paolo's signature \"cucina convivale\" tasting experience, which emphasizes experimentation and creativity, this scent is a wonderful combination of flavors- the aquatic brine of the ocean, the sweetness of apricot and almond, the creaminess of fresh dairy, and a captivating melange of aromatic herbs and spices. It's a scent both bright and rich, lively and decadent, sure to appeal to lovers of aquatics, orientals, and gourmands alike. In other words, it's as unique as Hilde Soliani herself- not to mention her equally impressive foodie friends."
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Disobbedienza Eau de Parfum',
+            brand: 'Hilde Soliani',
+            notes: 'black rose, ash, champagne',
+            desc: "Disobedience does not have to be a bad thing. In the talented and unrestricted artistic imagination of a perfumer like Hilde Soliani, it represents risk-tasking, freedom, and creative liberation. Inspired by her time performing experimental theater, Disobbedienza is an olfactive tribute to blazing one's own path in the face of stultifying conformity. There are notes chosen for their symbolism- a black, rare rose, both dark and romantic; smoky, mysterious ash to represent the phoenix-like cycle of destruction and rebirth; and, as befitting the Queen of Gourmand, a sweet and spicy opening with the tantalizing fizz of fine champagne. As with many of Hilde's most distinctive and compelling offerings, Disobbedienza rejects easy categorization, and yet it's as wonderfully easy to wear as any of her magical creations. Break away from conformity- lose yourself in the whimsical, bold, and iconoclastic world of Disobbedienza today."
+          }
+        ]
+      } else if (query == 'My Burberry Blush') {
+        // example 5
+        results = [
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Platino',
+            brand: 'Omnia Profumo',
+            notes:
+              ' Whipped cream, coconut, caramel, almond milk, jasmine, mimosa, vanilla, white musk',
+            desc: ' A transcendently light almond-infused meringue drizzled with coconut, caramel and vanilla.  Platino is definitely delicious, but it is also frothy and airy, which is unexpected given the rich dessert-like notes it incorporates. The luscious blend of gourmand elements is buoyed by exquisitely delicate jasmine and mimosa and the result is a dreamy cloud cake that floats effortlessly over the drudgery of the everyday world, trailing a gentle puff of powder.  This is not a simple bonbon, but a confection of the highest order, intricately layered to seduce and delight us. The insistent hint of bitterness from the almond counters the sugary caramel and the cool filigree of white flowers balances the cozy warmth of the soft musk.  Delectable and comforting , but with enough contradictions to keep us intrigued for a very long time.'
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: '00 Auriel Eau de Parfum',
+            brand: 'Odin',
+            notes:
+              'cassis, coriander, black pepper, rose, jasmine, muguet, agarwood, sandalwood, patchouli, labdanum',
+            desc: "No. 00 Auriel is a dark, sultry, animalic wood that balances feminine and masculine from top to bottom. At first impression, the scent opens with an assertive blend of cassis berries, herbaceous coriander and tellicherry peppercorns. The heart is a copious floral aphrodisiac of spicy rose absolute, creamy jasmin sambac and sweet muguet giving a smooth velvety texture. Auriel's roots of black agarwood develop on the skin with resinous warmth and richness that is undeniably provocative."
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Coal Eau de Parfum',
+            brand: 'Andrea Maack Parfums',
+            notes:
+              ' Sichuan pepper, pink pepper, juniper berry, cedar wood, papyrus, coal accord, sandalwood, patchouli and leather',
+            desc: " Andrea Maack's Coal fragrance is based on one of her original drawings made with black coal. Created with perfumer Richard Ibanez at Robertet, he tried to re-transcribe the smell and the atmosphere of an artists' studio when the artist is using black coal. Composed with dark and warm raw materials and fresh and vibrating ones, this eau de parfum shows the warm/cold contrast that black coal can have."
+          }
+        ]
+      } else {
+        // default
+        results = [
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Name1',
+            brand: 'Brand1',
+            notes: 'notes1, notes1, notes1, notes1',
+            desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Name2',
+            brand: 'Brand2',
+            notes: 'notes2, notes2, notes2',
+            desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
+          },
+          {
+            img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+            name: 'Name3',
+            brand: 'Brand3',
+            notes: 'notes3, notes3, notes3, notes3, notes3',
+            desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
+          }
+        ]
+      }
+
       // results = [
       //   {
       //     img: "{{ url_for('static', filename='images/perfume-default.png') }}",
@@ -101,41 +242,48 @@
       //   }
       // ]
 
-      results = [
-         {
-           img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-           name: 'Name1',
-           brand: 'Brand1',
-           notes: 'notes1, notes1, notes1, notes1',
-           desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
-         },
-         {
-           img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-           name: 'Name2',
-           brand: 'Brand2',
-           notes: 'notes2, notes2, notes2',
-           desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
-         },
-         {
-           img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-           name: 'Name3',
-           brand: 'Brand3',
-           notes: 'notes3, notes3, notes3, notes3, notes3',
-           desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
-         }
-       ]
+      // results template with place holders
+      // results = [
+      //    {
+      //      img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+      //      name: 'Name1',
+      //      brand: 'Brand1',
+      //      notes: 'notes1, notes1, notes1, notes1',
+      //      desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
+      //    },
+      //    {
+      //      img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+      //      name: 'Name2',
+      //      brand: 'Brand2',
+      //      notes: 'notes2, notes2, notes2',
+      //      desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
+      //    },
+      //    {
+      //      img: "{{ url_for('static', filename='images/perfume-default.png') }}",
+      //      name: 'Name3',
+      //      brand: 'Brand3',
+      //      notes: 'notes3, notes3, notes3, notes3, notes3',
+      //      desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
+      //    }
+      //  ]
 
-      results.forEach(res => {
-         let tempDiv = document.createElement('div')
-         tempDiv.innerHTML = resultTemplate(
-           res.img,
-           res.name,
-           res.brand,
-           res.notes,
-           res.desc
-         )
-         document.getElementById('result-box').appendChild(tempDiv)
-       })
+      if (results == []) {
+        let tempDiv = document.createElement('div')
+        tempDiv.innerHTML = `<div> No Results </div>`
+        document.getElementById('result-box').appendChild(tempDiv)
+      } else {
+        results.forEach(res => {
+          let tempDiv = document.createElement('div')
+          tempDiv.innerHTML = resultTemplate(
+            res.img,
+            res.name,
+            res.brand,
+            res.notes,
+            res.desc
+          )
+          document.getElementById('result-box').appendChild(tempDiv)
+        })
+      }
     }
 
     function resultTemplate(img, name, brand, notes, desc) {
@@ -146,6 +294,5 @@
                 <p class='fragrance-detail'>Description: ${desc}</p>
             </div>`
     }
-
   </script>
 </body>
