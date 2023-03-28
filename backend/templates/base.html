@@ -76,20 +76,21 @@
       // fetch("/similar?" + new URLSearchParams({ title: query }).toString())
       // .then(response) => response.json())
       // .then(move the results.foreach here);
+      
       results = [
         {
-          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-          name: 'Name1',
-          brand: 'Brand1',
-          notes: 'notes1, notes1, notes1, notes1',
-          desc: 'description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 description1 '
+          img: "{{ url_for('static', filename='images/50117.png') }}",
+          name: '00 Auriel Eau de Parfum',
+          brand: 'Odin',
+          notes: 'cassis, coriander, black pepper, rose, jasmine, muguet, agarwood, sandalwood, patchouli, labdanum',
+          desc: 'No. 00 Auriel is a dark, sultry, animalic wood that balances feminine and masculine from top to bottom. At first impression, the scent opens with an assertive blend of cassis berries, herbaceous coriander and tellicherry peppercorns. The heart is a copious floral aphrodisiac of spicy rose absolute, creamy jasmin sambac and sweet muguet giving a smooth velvety texture. Auriel\'s roots of black agarwood develop on the skin with resinous warmth and richness that is undeniably provocative.'
         },
         {
-          img: "{{ url_for('static', filename='images/perfume-default.png') }}",
-          name: 'Name2',
-          brand: 'Brand2',
-          notes: 'notes2, notes2, notes2',
-          desc: 'description2 description2 description2 description2 description2 description2 description2 description2 description2 '
+          img: "{{ url_for('static', filename='images/53002.png') }}",
+          name: '1 Parfum Extrait',
+          brand: 'Puredistance',
+          notes: 'Fresh tangerine blossom, cassis, neroli bigarade, magnolia, rose wardia, jasmine, natural mimosa, sweet amber, vetiver, white musknotes2, notes2',
+          desc: 'ne of the world\'s most exclusive fragrances, Puredistance I was created by a renowned perfumer Annie Buzantian. The story goes that this luminous green floral with a mouthwatering tease of black currant was originally Buzantian\'s own perfume... the perfumer\'s own scent sets high expectations and does not disappoint! Built on the play of the soft and the crisp, the warm and the cold, the fruity flirtiness and the floral elegance, the aroma is as complex and as polished as the most precious diamond. The citrus blossoms let the cool breeze into the luscious blend of jasmine and mimosa. The very delicate fruity accord in the top is carried on in the heart of the scent by the ever feminine note of magnolia. The graceful earthiness of vetiver in the base enhances the green quality of the blend, while musk and amber add warmth and sensuality to the dazzlingly pristine atmosphere of the composition. With its impeccable proportions and sublime, multifaceted beauty, Puredistance I is destined to become a modern class'
         },
         {
           img: "{{ url_for('static', filename='images/perfume-default.png') }}",
@@ -121,6 +122,6 @@
                 <p class='fragrance-detail'>Description: ${desc}</p>
             </div>`
     }
-    
+
   </script>
 </body>
