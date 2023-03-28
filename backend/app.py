@@ -42,12 +42,17 @@ CORS(app)
 # there's a much better and cleaner way to do this
 
 
-def sql_search(episode):
-    query_sql = f"""SELECT * FROM episodes WHERE LOWER( title ) LIKE '%%{episode.lower()}%%' limit 10"""
-    keys = ["id", "title", "descr"]
+def sql_search(query):
+    query_sql = f"""SELECT * FROM perfumes WHERE LOWER( name ) LIKE '%%{query.lower()}%%' limit 3"""
+    keys = ["name", "brand", "description", "notes", "imageURL"]
     data = mysql_engine.query_selector(query_sql)
     return json.dumps([dict(zip(keys, i)) for i in data])
 
+# TODO: add a new route
+@app.route("/similar")
+def similar_search():
+    query = request.args.get("name")
+    return sql_search(query)
 
 @app.route("/")
 def home():
@@ -82,12 +87,6 @@ def perfume_sql_search():
     for i in range(len(db)):
         db[i]['perfume_id'] = i
     return db
-
-# TODO: add a new route
-@app.route("/similar")
-def similar_search():
-    query = request.args.get("name")
-    return perfume_sql_search(query)
 
 def get_perfume_db():
     return perfume_sql_search()
