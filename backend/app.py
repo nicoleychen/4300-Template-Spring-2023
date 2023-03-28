@@ -42,7 +42,7 @@ CORS(app)
 # there's a much better and cleaner way to do this
 
 
-def sql_search(query):
+def sql_search("00 Auriel Eau de Parfum"):
     query_sql = f"""SELECT * FROM perfumes WHERE LOWER( name ) LIKE '%%{query.lower()}%%' limit 3"""
     keys = ["name", "brand", "description", "notes", "imageURL"]
     data = mysql_engine.query_selector(query_sql)
