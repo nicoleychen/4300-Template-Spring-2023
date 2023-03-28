@@ -60,13 +60,6 @@ def home():
 #     return sql_search(text)
 
 
-# TODO: add a new route
-@app.route("/similar")
-def similar_search():
-    query = request.args.get("name")
-    return sql_search(query)
-
-
 # TODO: add def
 # app.run(debug=True)
 # TODO: figure out if json is correct in importing from sql datbase
@@ -89,6 +82,12 @@ def perfume_sql_search():
     for i in range(len(db)):
         db[i]['perfume_id'] = i
     return db
+
+# TODO: add a new route
+@app.route("/similar")
+def similar_search():
+    query = request.args.get("name")
+    return perfume_sql_search(query)
 
 def get_perfume_db():
     return perfume_sql_search()
@@ -113,10 +112,9 @@ def perfume_index_to_name(db):
     {v:k for k,v in perfume_name_to_index.items()}
 
 # get query perfume
-@app.route("/querycheck")
-def check_query(input_query, perfume_db):
+def check_query(input_query):
     query = input_query.lower()
-    perfume_names = get_perfume_names(perfume_db)
+    perfume_names = get_perfume_names(get_perfume_db())
     if query in perfume_names:
         return query
     else:
