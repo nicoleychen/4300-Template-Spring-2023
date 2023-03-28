@@ -48,14 +48,6 @@
     console.log(button)
     button.addEventListener('click', returnResults)
     
-    function resultTemplate(img, name, brand, notes, desc) {
-      return `<div class='result-card'>
-                <img src=${img} class='fragrance-img'>
-                <h3 class='fragrance-name'>${name} by ${brand}</h3>
-                <p class='fragrance-detail'>Notes: ${notes}</p>
-                <p class='fragrance-detail'>Description: ${desc}</p>
-            </div>`
-    }
 
     function returnResults() {
       var query = document.getElementById('search-text').value
@@ -107,7 +99,7 @@
           desc: 'description3 description3 description3 description3 description3 description3 description3 description3 '
         }
       ]
-      
+
       results.forEach(res => {
          let tempDiv = document.createElement('div')
          tempDiv.innerHTML = resultTemplate(
@@ -120,5 +112,15 @@
          document.getElementById('result-box').appendChild(tempDiv)
        })
     }
+
+    function resultTemplate(img, name, brand, notes, desc) {
+      return `<div class='result-card'>
+                <img src=${img} class='fragrance-img'>
+                <h3 class='fragrance-name'>${name} by ${brand}</h3>
+                <p class='fragrance-detail'>Notes: ${notes}</p>
+                <p class='fragrance-detail'>Description: ${desc}</p>
+            </div>`
+    }
+    
   </script>
 </body>
