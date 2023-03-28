@@ -56,7 +56,7 @@
                 <p class='fragrance-detail'>Description: ${desc}</p>
             </div>`
     }
-    
+
     function returnResults() {
       var query = document.getElementById('search-text').value
 
@@ -67,19 +67,18 @@
       // for now use a dummy data
 
       fetch("/similar?" + new URLSearchParams({ title: query }).toString())
-            .then((response) => response.json())
-            .then((data) = data.forEach(res => {
+      .then((response) => response.json())
+      .then((data) = data.forEach(res => {
 
-              let tempDiv = document.createElement('div')
-              tempDiv.innerHTML = resultTemplate(
-                res.imageURL,
-                res.name,
-                res.brand,
-                res.notes,
-                res.description
-              )
-              document.getElementById('result-box').appendChild(tempDiv)
-            }));
+        let tempDiv = document.createElement('div')
+        tempDiv.innerHTML = resultTemplate(
+          res.imageURL,
+          res.name,
+          res.brand,
+          res.notes,
+          res.description)
+        document.getElementById('result-box').appendChild(tempDiv)
+    }));
 
       // pseudocode
       // fetch("/similar?" + new URLSearchParams({ title: query }).toString())
