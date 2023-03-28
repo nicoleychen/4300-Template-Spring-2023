@@ -43,7 +43,7 @@ CORS(app)
 
 
 def sql_search(query):
-    query_sql = f"""SELECT * FROM perfumes WHERE LOWER( notes ) LIKE '%%{query.lower()}%%' limit 3"""
+    query_sql = f"""SELECT * FROM perfumes WHERE LOWER( name ) LIKE '%%{query.lower()}%%' limit 3"""
     keys = ["name", "brand", "description", "notes", "imageURL"]
     data = mysql_engine.query_selector(query_sql)
     return json.dumps([dict(zip(keys, i)) for i in data])

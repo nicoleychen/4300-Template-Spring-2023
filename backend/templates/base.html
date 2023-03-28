@@ -59,15 +59,15 @@
 
       fetch("/similar?" + new URLSearchParams({ title: query }).toString())
             .then((response) => response.json())
-            .then((data) => data.forEach(res => {
+            .then((data) = data.forEach(res => {
 
               let tempDiv = document.createElement('div')
               tempDiv.innerHTML = resultTemplate(
-                res.img,
+                res.imageURL,
                 res.name,
                 res.brand,
                 res.notes,
-                res.desc
+                res.description
               )
               document.getElementById('result-box').appendChild(tempDiv)
             }));
