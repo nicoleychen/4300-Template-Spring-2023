@@ -60,13 +60,6 @@ def episodes_search():
     return sql_search(text)
 
 
-# TODO: add a new route
-@app.route("/similar")
-def similar_search():
-    query = request.args.get("name")
-    pass
-
-
 # TODO: add def
 # app.run(debug=True)
 
@@ -80,21 +73,43 @@ def similar_search():
 # TODO: split db into data of just perfume name with notes
 # create list of dictionaries for ech perfume
 
-def perfume_sql_search():
-    """
-    form of output: list of dictionaries [{perfume name 1:___, brand:____, notes:____, description:____}, {}....}]
-    """
-    query_sql = f"""SELECT * FROM perfumes"""
-    keys = ["name", "brand", "description", "notes", "imageURL"]
-    data = mysql_engine.query_selector(query_sql)
-    db = [dict(zip(keys, i)) for i in data]
-    for i in range(len(db)):
-        db[i]['perfume_id'] = i
-    return db
+# JJ: function that opens json file
+def load_perfume_data():
+    f = open('perfume_data_combined.json')
+    data = json.load(f)
+    for i in range(10):
+        print(data[i])
+    f.close()
+    return data
 
 
-def get_perfume_db():
-    return perfume_sql_search()
+perfume_data = load_perfume_data()
+
+
+@app.route("/testing")
+def testing_search():
+    query = request.args.get("name")
+    for name in perfume_data['name']:
+        if name == query:
+            return True
+    return False
+
+
+# def perfume_sql_search():
+#     """
+#     form of output: list of dictionaries [{perfume name 1:___, brand:____, notes:____, description:____}, {}....}]
+#     """
+#     query_sql = f"""SELECT * FROM perfumes"""
+#     keys = ["name", "brand", "description", "notes", "imageURL"]
+#     data = mysql_engine.query_selector(query_sql)
+#     db = [dict(zip(keys, i)) for i in data]
+#     for i in range(len(db)):
+#         db[i]['perfume_id'] = i
+#     return db
+
+
+# def get_perfume_db():
+#     return perfume_sql_search()
 
 
 def get_perfume_names(db):
