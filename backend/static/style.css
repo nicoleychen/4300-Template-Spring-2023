@@ -139,6 +139,12 @@
     font-family: 'Montserrat', sans-serif;
 }
 
-.filter-buttons label{
-    font-family: 'Open Sans', sans-serif;
+.filter-buttons label, .filter-buttons p{
+    font-family: 'Montserrat', sans-serif;
+}
+
+.filter-buttons{
+    position:relative;
+    left: -150px;
+    padding: 20px;
 }
