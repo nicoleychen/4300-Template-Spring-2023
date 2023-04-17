@@ -84,32 +84,50 @@ def load_perfume_data():
 
 
 perfume_data = load_perfume_data()
+gender = "for women and men"
 
 
 @app.route("/testing")
 def testing_search():
     query = request.args.get("name")
-    for i in range(517):
-        if perfume_data["name"][str(i)] == query:
+    print("test query: " + str(query))
+    for _, name in perfume_data["name"].items():
+        if name == query:
             return json.dumps(True)
     return json.dumps(False)
 
 # NC: gets input gender preference from frontend and returns it
 @app.route("/gender_pref")
 def gender_search():
-    query = request.args.get("gender_pref")
-    return json.dumps(query)
+    query = request.args.get("gender")
+    print("gender query: " + str(query))
+    pref = ""
+    # men
+    if query == "male":
+        pref = "for men"
+    # women, idk why it's on but i'm j rolling w it
+    elif query == "on":
+        pref = "for women"
+    # no pref
+    else:
+        pref = "for women and men"
+    gender = pref
+    return json.dumps(pref)
 
 # NC: uses gender_search to filter by input gender preference. 
 # Takes in perfume_data JSON and a list of indices that correspond to perfumes.
 # Returns a list of filtered indices that correspond to the input gender preference.
 def gender_filter(perfume_data, perfume_ind):
-    query = gender_search()
+    # set query to result of gender search somehow, this doesn't work
+    # query = gender_search()
+    query = gender
     res = []
     for i in range(len(perfume_ind)):
         if perfume_data["for_gender"][str(i)] == query:
             res.append(i)
+    print(res)
     return res
+
 
 # NC: takes in perfume_data JSON and a list of indices that correspond to perfumes.
 # Returns a filtered list of indices that only correspond to those with above 3.5 star ratings. 
