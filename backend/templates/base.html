@@ -67,8 +67,16 @@
 
       //JJ: testing function -- console log true if the query exsists in the dataset & false otherwise
       fetch("/testing?" + new URLSearchParams({ name: query }).toString())
-        .then((response) => response.json())
-        .then(console.log(data));
+      .then(function (response) {
+          // The API call was successful!
+          return response.json();
+        }).then(function (data) {
+          // This is the JSON from our response
+          console.log(data);
+        }).catch(function (err) {
+	        // There was an error
+	        console.warn('Something went wrong.', err);
+        });
 
       let results = [];
 

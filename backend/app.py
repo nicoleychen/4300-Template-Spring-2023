@@ -78,7 +78,7 @@ def load_perfume_data():
     f = open('perfume_data_combined.json')
     data = json.load(f)
     for i in range(10):
-        print(data[i])
+        print(data["name"][str(i)])
     f.close()
     return data
 
@@ -89,11 +89,37 @@ perfume_data = load_perfume_data()
 @app.route("/testing")
 def testing_search():
     query = request.args.get("name")
-    for name in perfume_data['name']:
-        if name == query:
-            return True
-    return False
+    for i in range(517):
+        if perfume_data["name"][str(i)] == query:
+            return json.dumps(True)
+    return json.dumps(False)
 
+# NC: gets input gender preference from frontend and returns it
+@app.route("/gender_pref")
+def gender_search():
+    query = request.args.get("gender_pref")
+    return json.dumps(query)
+
+# NC: uses gender_search to filter by input gender preference. 
+# Takes in perfume_data JSON and a list of indices that correspond to perfumes.
+# Returns a list of filtered indices that correspond to the input gender preference.
+def gender_filter(perfume_data, perfume_ind):
+    query = gender_search()
+    res = []
+    for i in range(len(perfume_ind)):
+        if perfume_data["for_gender"][str(i)] == query:
+            res.append(i)
+    return res
+
+# NC: takes in perfume_data JSON and a list of indices that correspond to perfumes.
+# Returns a filtered list of indices that only correspond to those with above 3.5 star ratings. 
+def rating_threshold_filter(perfume_data, perfume_ind):
+    res = []
+    for i in range(len(perfume_ind)):
+        if perfume_data["rating"][str(i)] > 3.5:
+            res.append(i)
+    return res
+    
 
 # def perfume_sql_search():
 #     """
@@ -133,12 +159,12 @@ def perfume_id_to_name(db):
 
 
 def perfume_name_to_index(db):
-    {name: perfume_id_to_index[perfume_name_to_id[name]]
+    return {name: perfume_id_to_index[perfume_name_to_id[name]]
         for name in [d['name'] for d in db]}
 
 
 def perfume_index_to_name(db):
-    {v: k for k, v in perfume_name_to_index.items()}
+    return {v: k for k, v in perfume_name_to_index.items()}
 
 # get query perfume
 
@@ -148,8 +174,7 @@ def check_query(input_query, perfume_db):
     perfume_names = get_perfume_names(perfume_db)
     if query in perfume_names:
         return query
-    else:
-        return "Sorry, no results found. Check your spelling or try a different perfume."
+    return "Sorry, no results found. Check your spelling or try a different perfume."
 
 
 def build_inverted_index(database):
