@@ -96,6 +96,17 @@ def testing_search():
             return json.dumps(True)
     return json.dumps(False)
 
+@app.route("/similar")
+def similar_search():
+    name = request.args.get("name")
+    gender_pref = request.args.get("gender_pref")
+    print("name: " + name)
+    print("gender:" + gender_pref)
+
+    # check if name is in perfume json, if not return "sorry pick another name"
+    # Rest of algorithm goes here
+
+
 # NC: gets input gender preference from frontend and returns it
 @app.route("/gender_pref")
 def gender_search():
@@ -187,6 +198,20 @@ def perfume_index_to_name(db):
 # get query perfume
 
 
+
+# loop through all the top middle bottom notes, returns a list of dictionaries that represent {perfume id : list of notes}
+def perfume_id_to_all_notes(perfume_json):
+    top_note_json = perfume_json['top notes']
+    middle_note_json = perfume_json['middle notes']
+    base_note_json = perfume_json['base notes']
+    res = []
+    for id in top_note_json:
+        perf = {}
+        perf['id'] = id
+        perf['notes'] = top_note_json[id] + middle_note_json[id] + base_note_json[id]
+        res.append(perf)
+    return res
+
 def check_query(input_query, perfume_db):
     query = input_query.lower()
     perfume_names = get_perfume_names(perfume_db)
@@ -226,8 +251,7 @@ def build_perf_sims_jac(n_perf, input_data):
         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
         such that perf_sims_jac[i,j] = perf_sims_jac[j,i].
     Params: {n_perf: Integer, the number of perfumes,
-            input_data: List<Dictionary>, a list of dictionaries where each dictionary
-                     represents the perfume_data including the perfume and the metadata of each perfume}
+            input_data: List<Dictionary>, a list of dictionaries that represent perfume id : list of all notes}
     Returns: Numpy Array
     """
     perf_sims = np.zeros((n_perf, n_perf))
@@ -244,8 +268,6 @@ def build_perf_sims_jac(n_perf, input_data):
     return perf_sims
 
 # rank all perfumes, and return top 3
-
-
 def get_ranked_perfumes(perfume, matrix, perf_index_to_name):
     """
     Return top 3 of sorted rankings (most to least similar) of perfumes as

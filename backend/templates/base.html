@@ -44,9 +44,9 @@
         <label for="male-button"> Male</label>
         <input type="radio", id="female-button", name="gender",value="female"/>
         <label for="female-button"> Female</label>
-        <input type="radio", id="no-pref", name="gender", value="no preference" checked
+        <input type="radio", id="no-pref-button", name="gender", value="no preference" checked
         />
-        <label for="no-pref"> No preference</label>
+        <label for="no-pref-button"> No preference</label>
       </div>
     </div>
     <div id="result-box">
@@ -56,28 +56,35 @@
 
   <script>
     // creates API request every time a gender pref is selected
-    if (document.querySelector('input[name="gender"]')) {
-      document.querySelectorAll('input[name="gender"]').forEach((elem) => {
-        elem.addEventListener("change", function(event) {
-        var gender = event.target.value;
-        fetch("/gender_pref?" + new URLSearchParams({ gender: gender }).toString())
-        .then(function (response){
-          return response.json();
-        }).then(function (data) {
-          console.log(data);
-        }).catch(function (err){
-          console.warn("Something went wrong.", err);
-        });
-         });
-      });
-    }  
+    // if (document.querySelector('input[name="gender"]')) {
+    //   document.querySelectorAll('input[name="gender"]').forEach((elem) => {
+    //     elem.addEventListener("change", function(event) {
+    //     var gender = event.target.value;
+    //     fetch("/gender_pref?" + new URLSearchParams({ gender: gender }).toString())
+    //     .then(function (response){
+    //       return response.json();
+    //     }).then(function (data) {
+    //       console.log(data);
+    //     }).catch(function (err){
+    //       console.warn("Something went wrong.", err);
+    //     });
+    //      });
+    //   });
+    // }  
     
     const button = document.getElementById("search-button");
     console.log(button);
     button.addEventListener("click", returnResults);
     
     function returnResults() {
-      var query = document.getElementById("search-text").value;
+      var removeBoxes = document.getElementsByClassName("result-card");
+      for (var i = 0; i < removeBoxes.length; i++) {
+        removeBoxes[i].remove();
+      }
+      let query = document.getElementById("search-text").value;
+      let male_pref = document.getElementById("male-button").checked;
+      let female_pref = document.getElementById("female-button").checked;
+      let no_pref = document.getElementById("no-pref-button").checked;
 
       document.getElementById("result-heading-text").textContent =
         'Results similar to "' + query + '":';
@@ -269,8 +276,11 @@
             res.img,
             res.name,
             res.brand,
-            res.notes,
-            res.desc
+            res.topnote,
+            res.middlenote,
+            res.bottomnote,
+            res.desc,
+            res.rating
           );
           document.getElementById("result-box").appendChild(tempDiv);
         });
@@ -281,9 +291,12 @@
       return `<div class='result-card'>
                 <img src=${img} class='fragrance-img'>
                 <h3 class='fragrance-name'>${name} by ${brand}</h3>
-                <p class='fragrance-detail'>Notes: ${notes}</p>
+                // <p class='fragrance-detail'> Notes: ${notes}</p>
+                <p class = 'fragrance-detail'> Top notes: ${topnote} </p>
+                <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
+                <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
                 <p class='fragrance-detail'>Description: ${desc}</p>
-                <p class = 'fragrance-detail'> Rating: 5 stars </p> 
+                <p class = 'fragrance-detail'> Rating: ${rating}</p> 
             </div>`;
     }
   </script>
