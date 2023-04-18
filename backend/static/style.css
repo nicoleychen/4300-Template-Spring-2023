@@ -124,6 +124,13 @@
     padding: 0px 20px 0px 20px ;
 }
 
+.no-result{
+    align-items: center;
+    font-size: 20px;
+    font-family: 'Open Sans', sans-serif;
+    color: black;
+}
+
 .fragrance-img{
     width: 120px;
     height: auto;

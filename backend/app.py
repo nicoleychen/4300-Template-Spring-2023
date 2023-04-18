@@ -82,71 +82,91 @@ def load_perfume_data():
     f.close()
     return data
 
+perfume_json = load_perfume_data()
 
-perfume_data = load_perfume_data()
-gender = "for women and men"
-
-
+# checks if query is in dataset or not
 @app.route("/testing")
 def testing_search():
     query = request.args.get("name")
     print("test query: " + str(query))
-    for _, name in perfume_data["name"].items():
+    for _, name in perfume_json["name"].items():
         if name == query:
             return json.dumps(True)
     return json.dumps(False)
 
+# this is main route combining query and gender preference
 @app.route("/similar")
 def similar_search():
+    result = []
     name = request.args.get("name")
     gender_pref = request.args.get("gender_pref")
     print("name: " + name)
     print("gender:" + gender_pref)
 
+    exists = False
+    for _, perf_name in perfume_json["name"].items():
+        if perf_name == name:
+            exists = True
+    if not exists:
+        return json.dumps(result)
     # check if name is in perfume json, if not return "sorry pick another name"
     # Rest of algorithm goes here
+    # 1. gender filter
+    all_ids = list(perfume_json["name"].keys())
+    gendered_ids = gender_filter(perfume_json, all_ids, gender_pref)
+    # 2. rating threshold filter
+    rated_ids = rating_threshold_filter(perfume_json, gendered_ids)
+
+    # 3. jaccard sim filter
+    num_perfumes = len(rated_ids)
+    perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
+    
+    jaccard = build_perf_sims_jac(num_perfumes, perf_data)
+    perfume_ind_to_id = perfume_index_to_id(perf_data)
+    ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
+    result = results(ranked, perfume_json)
+    
+    return json.dumps(result)
 
 
 # NC: gets input gender preference from frontend and returns it
-@app.route("/gender_pref")
-def gender_search():
-    query = request.args.get("gender")
-    print("gender query: " + str(query))
-    pref = ""
-    # men
-    if query == "male":
-        pref = "for men"
-    # women, idk why it's on but i'm j rolling w it
-    elif query == "on":
-        pref = "for women"
-    # no pref
-    else:
-        pref = "for women and men"
-    gender = pref
-    return json.dumps(pref)
+# @app.route("/gender_pref")
+# def gender_search():
+#     query = request.args.get("gender")
+#     print("gender query: " + str(query))
+#     pref = ""
+#     # men
+#     if query == "male":
+#         pref = "for men"
+#     # women, idk why it's on but i'm j rolling w it
+#     elif query == "on":
+#         pref = "for women"
+#     # no pref
+#     else:
+#         pref = "for women and men"
+#     gender = pref
+#     return json.dumps(pref)
 
 # NC: uses gender_search to filter by input gender preference. 
-# Takes in perfume_data JSON and a list of indices that correspond to perfumes.
-# Returns a list of filtered indices that correspond to the input gender preference.
-def gender_filter(perfume_data, perfume_ind):
+# Takes in perfume_data JSON and a list of ids that correspond to perfumes.
+# Returns a list of filtered ids that correspond to the input gender preference.
+def gender_filter(perfume_data, perfume_ids, gender_filter):
     # set query to result of gender search somehow, this doesn't work
     # query = gender_search()
-    query = gender
     res = []
-    for i in range(len(perfume_ind)):
-        if perfume_data["for_gender"][str(i)] == query:
-            res.append(i)
-    print(res)
+    for id in perfume_ids:
+        if perfume_data["for_gender"][str(id)] != gender_filter:
+            res.append(id)
     return res
 
 
-# NC: takes in perfume_data JSON and a list of indices that correspond to perfumes.
-# Returns a filtered list of indices that only correspond to those with above 3.5 star ratings. 
-def rating_threshold_filter(perfume_data, perfume_ind):
+# NC: takes in perfume_data JSON and a list of ids that correspond to perfumes.
+# Returns a filtered list of ids that only correspond to those with above 3 star ratings. 
+def rating_threshold_filter(perfume_data, perfume_ids, threshold = 3.0):
     res = []
-    for i in range(len(perfume_ind)):
-        if perfume_data["rating"][str(i)] > 3.5:
-            res.append(i)
+    for id in perfume_ids:
+        if (perfume_data["rating"][str(id)])!= "NA" and float(perfume_data["rating"][str(id)]) > threshold:
+            res.append(id)
     return res
     
 
@@ -167,60 +187,81 @@ def rating_threshold_filter(perfume_data, perfume_ind):
 #     return perfume_sql_search()
 
 
-def get_perfume_names(db):
-    names = set()
-    for i in db:
-        names.add(i['name'])
-    return names
-
-
-def perfume_id_to_index(db):
-    return {perfume_id: index for index, perfume_id in enumerate([d['perfume_id'] for d in db])}
-
-
-def perfume_name_to_id(db):
-    return {name: pid for name, pid in zip([d['name'] for d in db],
-                                           [d['perfume_id'] for d in db])}
-
-
-def perfume_id_to_name(db):
-    return {v: k for k, v in perfume_name_to_id.items()}
-
-
-def perfume_name_to_index(db):
-    return {name: perfume_id_to_index[perfume_name_to_id[name]]
-        for name in [d['name'] for d in db]}
-
-
-def perfume_index_to_name(db):
-    return {v: k for k, v in perfume_name_to_index.items()}
-
-# get query perfume
-
-
-
-# loop through all the top middle bottom notes, returns a list of dictionaries that represent {perfume id : list of notes}
-def perfume_id_to_all_notes(perfume_json):
+# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes, returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
+# THIS IS THE FILTERED PERFUME DATA TO USE
+def perfume_json_to_all_notes(perfume_json, ids):
     top_note_json = perfume_json['top notes']
     middle_note_json = perfume_json['middle notes']
     base_note_json = perfume_json['base notes']
     res = []
     for id in top_note_json:
-        perf = {}
-        perf['id'] = id
-        perf['notes'] = top_note_json[id] + middle_note_json[id] + base_note_json[id]
-        res.append(perf)
+        if id in ids:
+            perf = {}
+            perf['id'] = id
+            perf['name'] = perfume_json["name"][id]
+            perf['notes'] = top_note_json[id] + middle_note_json[id] + base_note_json[id]
+            res.append(perf)
     return res
 
-def check_query(input_query, perfume_db):
-    query = input_query.lower()
-    perfume_names = get_perfume_names(perfume_db)
-    if query in perfume_names:
-        return query
+def get_perfume_names(perf_json):
+# gets all perfume names
+    names = set(perf_json['name'].values())
+    return names
+
+
+def perfume_id_to_index(filtered_perf):
+# Builds dictionary where keys are the perfume id, and values are the index
+# takes in filtered perfume
+    res = {}
+    for i in range(len(filtered_perf)):
+        perfume = filtered_perf[i]
+        res[perfume['id']] = i
+    return res
+
+def perfume_index_to_id(filtered_perf):
+# Builds dictionary where keys are the perfume id numbers, and values are the index
+# takes in filtered perfume
+    res = {}
+    temp = perfume_id_to_index(filtered_perf)
+    for k, v in temp.items():
+        res[v] = k
+    return res
+
+def perfume_id_to_name(perf_json):
+# Dictionary {id : name}
+    return perf_json['name']
+
+def perfume_name_to_id(perf_json):
+# Dictionary {name : id}
+    res = {}
+    for k, v in perf_json['name'].items():
+        res[v] = k
+    return res
+
+def perfume_name_to_index(filtered_perf):
+# Dictionary {name : ind}
+    res = {}
+    for i in range(len(filtered_perf)):
+       res[filtered_perf[i]['name']] = i
+    return res
+
+def perfume_index_to_name(filtered_perf):
+# Dictionary {ind : name}
+    res = {}
+    for i in range(len(filtered_perf)):
+       res[i] = filtered_perf[i]['name']
+    return res
+
+# get query perfume
+def check_query(input_query, perf_json):
+    # query = input_query.lower()
+    perfume_names = get_perfume_names(perf_json)
+    if input_query in perfume_names:
+        return input_query
     return "Sorry, no results found. Check your spelling or try a different perfume."
 
 
-def build_inverted_index(database):
+def build_inverted_index(filtered_pref):
     """ Builds an inverted index from the perfume name and notes.
     Arguments
     =========
@@ -264,44 +305,70 @@ def build_perf_sims_jac(n_perf, input_data):
                 category_2 = set(input_data[j]["notes"])
                 intersect = len(category_1.intersection(category_2))
                 union = len(category_1.union(category_2))
-                perf_sims[i][j] = intersect/union
+                if union ==0:
+                    perf_sims[i][j] = 0
+                else:
+                    perf_sims[i][j] = intersect/union
     return perf_sims
 
 # rank all perfumes, and return top 3
-def get_ranked_perfumes(perfume, matrix, perf_index_to_name):
+def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     """
-    Return top 3 of sorted rankings (most to least similar) of perfumes as
+    Return top 5 of sorted rankings (most to least similar) of perfumes as
     a list of two-element tuples, where the first element is the
     perfume name and the second element is the similarity score
     Params: {perfume: String,
-             matrix: np.ndarray
+             matrix: np.ndarray (the output of build_perf_sims_jac)
              perf_index_to_name: dict}
-    Returns: List<Tuple>
+    Returns: List<Tuple> (id, score)
     """
     # Get movie index from movie name
-    perf_idx = perfume_name_to_index[perfume]
+    perf_idx = perfume_name_to_index(filtered_perf)[perfume]
     # Get list of similarity scores for movie
     score_lst = matrix[perf_idx]
-    perf_score_lst = [(perf_index_to_name[i], s)
+    perf_score_lst = [(perf_index_to_id[i], s)
                       for i, s in enumerate(score_lst)]
     # Do not account for movie itself in ranking
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
     # Sort rankings by score
     perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
-    return perf_score_lst[:3]
+    return perf_score_lst[:5]
 
 # get the necessary information
 
 
-def results(top_3, input_dict):
+def results(top_5, perf_json):
     """
-        Take in list of top 3 perfumes and get the corresponding info
+        Take in list of top 5 perfumes ids and get the corresponding info
         input_dict: list of dictionaries for each perfume - perf_dict
+
+        Returns: 
     """
-    dicts = []
-    for i in top_3:
-        dicts.append(input_dict[i])
-    return dicts
+    final = []
+    for i in range(len(top_5)):
+        info = {}
+        info["img"] = perf_json["image"][top_5[i][0]]
+        info["gender"] = perf_json["for_gender"][top_5[i][0]]
+        info["name"] = perf_json["name"][top_5[i][0]]
+        info["brand"] = perf_json["company"][top_5[i][0]]
+        info["rating"] = perf_json["rating"][top_5[i][0]]
+        info["gender"] = perf_json["for_gender"][top_5[i][0]]
+        info["topnote"] = perf_json["top notes"][top_5[i][0]]
+        info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
+        info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
+        info["desc"] = perf_json["description"][top_5[i][0]]
+        final.append(info)
+    return final
+
+    # "img": "https://fimgs.net/mdimg/perfume/375x500.62615.jpg", 
+    #     "name": "Name1", 
+    #     "brand": "Brand1", 
+    #     "rating": 3.9,
+    #     "gender": "For women"
+    #     "topnote": "top1, top2, top3", 
+    #     "middlenote": "mid1, mid2, mid3",
+    #     "bottomnote": "bot1, bot2, bot3",
+    #     "desc": "description1 description1 description1 description1
 
 
 #     final = []
