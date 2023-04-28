@@ -155,3 +155,8 @@
     left: -150px;
     padding: 20px;
 }
+
+.filter-rating{
+    position:relative;
+    padding: 50px;
+}
