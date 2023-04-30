@@ -623,7 +623,6 @@ def results(top_5, perf_json):
         
 #     """
     
-#     # YOUR CODE HERE
 #     tokens = tokenizer.tokenize(query.lower())
 #     query_word_counts = {}
     
@@ -651,9 +650,32 @@ def results(top_5, perf_json):
         
 #     final_scores.sort(key=lambda item: item[0], reverse=True)
         
-#     return final_scores
+#     return final_scores[:5]
     
 
+#rev_results(top_5, perf_json)
+    # """
+    #     Take in list of top 5 perfumes ids and get the corresponding info
+    #     top_5: list of dictionaries for each perfume - perf_dict
+
+    #     Returns: 
+    # """
+    # final = []
+    # for i in range(len(top_5)):
+    #     info = {}
+    #     info["img"] = perf_json["image"][top_5[i][0]]
+    #     info["gender"] = perf_json["for_gender"][top_5[i][0]]
+    #     info["name"] = perf_json["name"][top_5[i][0]]
+    #     info["brand"] = perf_json["company"][top_5[i][0]]
+    #     info["rating"] = perf_json["rating"][top_5[i][0]]
+    #     info["gender"] = perf_json["for_gender"][top_5[i][0]]
+    #     info["topnote"] = perf_json["top notes"][top_5[i][0]]
+    #     info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
+    #     info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
+    #     info["desc"] = perf_json["description"][top_5[i][0]]
+    #     info
+    #     final.append(info)
+    # return final
 
 
 #     final = []
