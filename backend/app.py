@@ -170,7 +170,7 @@ def perfume_name_suggest(input_perf):
         score = fuzz.partial_ratio(input_perf.lower(), perf.lower())
         perf_scores[perf] = score
     sorted_perfs = sorted(perf_scores.items(), key=lambda x:x[1], reverse=True)[:5]
-    return json.dumps([perf[0] for prof in sorted_perfs])
+    return json.dumps([perf[0] for perf in sorted_perfs])
 
 
 # NC: gets input gender preference from frontend and returns it
