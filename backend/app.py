@@ -300,7 +300,7 @@ def check_query(input_query, perf_json):
     return "Sorry, no results found. Check your spelling or try a different perfume."
 
 
-def build_inverted_index(filtered_pref):
+def build_inverted_index(filtered_perf):
     """ Builds an inverted index from the perfume name and notes.
     Arguments
     =========
@@ -315,7 +315,7 @@ def build_inverted_index(filtered_pref):
         inverted_index[note] = [p1, p2, p3]
     """
     res = {}
-    for i in range(len(database)):
+    for i in range(len(filtered_perf)):
         id = database[i]
         notes = database['notes']
         notes_set = set(notes)
@@ -400,6 +400,261 @@ def results(top_5, perf_json):
         info["desc"] = perf_json["description"][top_5[i][0]]
         final.append(info)
     return final
+
+
+#funcctions for cosine sim 
+ 
+# def build_query_word_counts(input):
+#     """ Builds an query_word_wounts from the messages.
+#     Arguments
+#     =========
+    
+#     input: 1 string of a description
+    
+#     Returns
+#     =======
+    
+#     query_word_counts: dictionary 
+#         For each term, the index contains 
+#         1 item that represents the count of 
+#         the term in the query  ==> count_of_term_in_doc
+#         query_word_counts[term] = count_of_term_in_doc
+    
+#     """
+#    tokens = tokenizer.tokenize(input.lower())
+    # query_word_counts = {}
+    
+    # for word in tokens:
+    #     if word in query_word_counts: 
+    #         query_word_counts[word] += 1
+    #     else: 
+    #         query_word_counts[word] = 1
+    
+
+# def build_inverted_index(reviews):
+#     """ Builds an inverted index from the reviews of the desired perfume.
+    
+#     Arguments
+#     =========
+    
+#     reviews: list of dictionaries
+#         Each message in this list already has a 'toks'
+#         field that contains the tokenized message.
+ #         [{1: { "toks: ["I", "love", "u"]}}, {2 : {"toks:["I", "hate", "u"]}, ...]
+#     Returns
+#     =======
+    
+#     inverted_index: dict
+#         For each term, the index contains 
+#         a sorted list of tuples (doc_id, count_of_term_in_doc)
+#         such that tuples with smaller doc_ids appear first:
+#         inverted_index[term] = [(d1, tf1), (d2, tf2), ...]
+        
+#     Example
+#     =======
+    
+#     >> test_idx = build_inverted_index([
+#     ...    {'toks': ['to', 'be', 'or', 'not', 'to', 'be']},
+#     ...    {'toks': ['do', 'be', 'do', 'be', 'do']}])
+    
+#     >> test_idx['be']
+#     [(0, 2), (1, 2)]
+    
+#     >> test_idx['not']
+#     [(0, 1)]
+    
+#     """
+#     # YOUR CODE HERE
+#     inverted_idx = {}
+    
+#     for doc in range(len(reviews)-1): 
+#         tokens = reviews[doc]["toks"]
+#         for word in tokens: 
+#             if word in inverted_idx:  
+#                 if doc in inverted_idx[word]: 
+#                     inverted_idx[word][doc] += 1
+#                 else: 
+#                     inverted_idx[word][doc] = 1
+#             else: 
+#                 inverted_idx[word] = {}
+#                 inverted_idx[word][doc] = 1
+            
+#     sort_inverted_idx = {}
+#     for word in inverted_idx: 
+#         sort_list = list(inverted_idx[word].items())
+#         sort_list.sort(key=lambda i:i[0])
+#         sort_inverted_idx[word] = sort_list
+    
+#     return sort_inverted_idx
+
+
+
+# def compute_idf(inv_idx, n_reviews, min_df=10, max_df_ratio=0.95):
+#     """ Compute term IDF values from the inverted index.
+#     Words that are too frequent or too infrequent get pruned.
+#     Hint: Make sure to use log base 2.
+#     Arguments
+#     =========
+    
+#     inv_idx: an inverted index as above
+#     n_docs: int,
+#         The number of documents.
+#     min_df: int,
+#         Minimum number of documents a term must occur in.
+#         Less frequent words get ignored. 
+#         Documents that appear min_df number of times should be included.
+#     max_df_ratio: float,
+#         Maximum ratio of documents a term can occur in.
+#         More frequent words get ignored.
+#     Returns
+#     =======
+    
+#     idf: dict
+#         For each term, the dict contains the idf value.
+        
+#     """
+    
+#     # YOUR CODE HERE
+#     idf = {}
+    
+#     for term in inv_idx: 
+#         df = len(inv_idx[term])
+#         if df >= min_df and df/n_reviews <= max_df_ratio: 
+#             ratio = n_reviews/(1+df)
+#             idf[term] = np.log2(ratio)
+        
+#     return idf
+
+
+# def compute_doc_norms(index, idf, n_reviews):
+#     """ Precompute the euclidean norm of each document.
+#     Arguments
+#     =========
+#     index: the inverted index as above
+#     idf: dict,
+#         Precomputed idf values for the terms.
+#     n_docs: int,
+#         The total number of documents.
+#     Returns
+#     =======
+#     norms: np.array, size: n_docs
+#         norms[i] = the norm of document i.
+#     """
+    
+#     # YOUR CODE HERE
+#     sums = np.zeros(n_reviews)
+#     for word in index: 
+#         for (doc, tf) in index[word]: 
+#             if word in idf: 
+#                 sums[doc] += (tf*idf[word])**2
+#     norms = np.sqrt(sums)
+#     return norms
+
+
+# def accumulate_dot_scores(query_word_counts, index, idf):
+#     """ Perform a term-at-a-time iteration to efficiently compute the numerator term of cosine similarity across multiple documents.
+#     Arguments
+#     =========
+
+#     query_word_counts: dict,
+#         A dictionary containing all words that appear in the query;
+#         Each word is mapped to a count of how many times it appears in the query.
+#         In other words, query_word_counts[w] = the term frequency of w in the query.
+#         You may safely assume all words in the dict have been already lowercased.
+    
+#     index: the inverted index as above,
+    
+#     idf: dict,
+#         Precomputed idf values for the terms.
+    
+#     Returns
+#     =======
+    
+#     doc_scores: dict
+#         Dictionary mapping from doc ID to the final accumulated score for that doc
+#     """
+    
+#     doc_scores = {}
+    
+#     for word in query_word_counts: 
+#         if word in index:
+#             for (doc, tf) in index[word]: 
+#                 if doc in doc_scores:
+#                     doc_scores[doc] += (query_word_counts[word] * idf[word]) * (tf * idf[word])
+#                 else: 
+#                     doc_scores[doc] = (query_word_counts[word] * idf[word]) * (tf * idf[word])  
+        
+#     return doc_scores
+
+
+
+
+# def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
+#     """ Search the collection of documents for the given query
+    
+#     Arguments
+#     =========
+    
+#     query: string,
+#         The query we are looking for.
+    
+#     index: an inverted index as above
+    
+#     idf: idf values precomputed as above
+    
+#     doc_norms: document norms as computed above
+    
+#     score_func: function,
+#         A function that computes the numerator term of cosine similarity (the dot product) for all documents.
+#         Takes as input a dictionary of query word counts, the inverted index, and precomputed idf values.
+#         (See Q7)
+    
+#     tokenizer: a TreebankWordTokenizer
+    
+#     Returns
+#     =======
+    
+#     results, list of tuples (score, doc_id)
+#         Sorted list of results such that the first element has
+#         the highest score, and `doc_id` points to the document
+#         with the highest score.
+    
+#     Note: 
+        
+#     """
+    
+#     # YOUR CODE HERE
+#     tokens = tokenizer.tokenize(query.lower())
+#     query_word_counts = {}
+    
+#     for word in tokens:
+#         if word in query_word_counts: 
+#             query_word_counts[word] += 1
+#         else: 
+#             query_word_counts[word] = 1
+            
+
+#     scores = score_func(query_word_counts, index, idf)
+    
+#     q_norm = 0 
+#     for word in query_word_counts: 
+#         if word in idf: 
+#             q_norm += (query_word_counts[word]*idf[word])**2
+#     q_norm = np.sqrt(q_norm)
+
+#     for i in scores: 
+#         scores[i] = scores[i]/(doc_norms[i]*q_norm)
+        
+#     final_scores = []
+#     for tup in list(scores.items()):
+#         final_scores.append(tuple(reversed(tup)))
+        
+#     final_scores.sort(key=lambda item: item[0], reverse=True)
+        
+#     return final_scores
+    
+
+
 
 #     final = []
 #     perf_dict = {}
