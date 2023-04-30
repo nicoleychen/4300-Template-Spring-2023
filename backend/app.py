@@ -11,6 +11,7 @@ import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
+from fuzzywuzzy import fuzz
 
 from dotenv import load_dotenv
 
@@ -41,6 +42,24 @@ CORS(app)
 # but if you decide to use SQLAlchemy ORM framework,
 # there's a much better and cleaner way to do this
 
+'''
+load data
+'''
+path = "./static/json"
+# loading json ex.
+# with open(os.path.join(path,"prof_dedup.json"), "r") as f5:
+#     prof_list=json.load(f5) 
+
+# JJ: function that opens json file
+def load_perfume_data():
+    f = open('perfume_data_combined.json')
+    data = json.load(f)
+    for i in range(10):
+        print(data["name"][str(i)])
+    f.close()
+    return data
+
+perfume_json = load_perfume_data()
 
 def sql_search(episode):
     query_sql = f"""SELECT * FROM episodes WHERE LOWER( title ) LIKE '%%{episode.lower()}%%' limit 10"""
@@ -63,26 +82,11 @@ def episodes_search():
 # TODO: add def
 # app.run(debug=True)
 
-
-# TODO: figure out if json is correct in importing from sql datbase
-# TODO: figure out how to connect to sql and import sql database --> i think data is on my personal database connection
-#      so changing the dtabase connection ports in app.py to my root would work for me, but it doesn't work for you guys i don't think
-# TODO: maybe for now use csv file format initially?
-# with open("perfume-data.json") as f:
-#     perfumes = json.load(f)
-# TODO: split db into data of just perfume name with notes
-# create list of dictionaries for ech perfume
-
-# JJ: function that opens json file
-def load_perfume_data():
-    f = open('perfume_data_combined.json')
-    data = json.load(f)
-    for i in range(10):
-        print(data["name"][str(i)])
-    f.close()
-    return data
-
-perfume_json = load_perfume_data()
+# search autocomplete 
+@app.route("/suggestion/prof")
+def suggest_perf():
+    text = request.args.get("name")
+    return perfume_name_suggest(text)
 
 # checks if query is in dataset or not
 @app.route("/testing")
@@ -127,6 +131,21 @@ def similar_search():
     result = results(ranked, perfume_json)
     
     return json.dumps(result)
+
+
+"""
+CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-recommender/blob/master/backend/app.py
+note: functions for edit distance in dropdowns
+"""
+def perfume_name_suggest(input_perf):
+    perf_scores = {}
+    perf_name_list = get_perfume_names(perfume_json)
+    # perf_list is json file
+    for perf in perf_name_list:
+        score = fuzz.partial_ratio(input_perf.lower(), perf.lower())
+        perf_scores[perf] = score
+    sorted_perfs = sorted(perf_scores.items(), key=lambda x:x[1], reverse=True)[:5]
+    return json.dumps([perf[0] for prof in sorted_perfs])
 
 
 # NC: gets input gender preference from frontend and returns it
