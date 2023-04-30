@@ -63,22 +63,10 @@ def episodes_search():
 # TODO: add def
 # app.run(debug=True)
 
-
-# TODO: figure out if json is correct in importing from sql datbase
-# TODO: figure out how to connect to sql and import sql database --> i think data is on my personal database connection
-#      so changing the dtabase connection ports in app.py to my root would work for me, but it doesn't work for you guys i don't think
-# TODO: maybe for now use csv file format initially?
-# with open("perfume-data.json") as f:
-#     perfumes = json.load(f)
-# TODO: split db into data of just perfume name with notes
-# create list of dictionaries for ech perfume
-
 # JJ: function that opens json file
 def load_perfume_data():
     f = open('perfume_data_combined.json')
     data = json.load(f)
-    # for i in range(10):
-    #     print(data["name"][str(i)])
     print("JSON succesfully loaded!")
     f.close()
     return data
@@ -147,28 +135,11 @@ def similar_search():
 
     return json.dumps(result)
 
-
-# NC: gets input gender preference from frontend and returns it
-# @app.route("/gender_pref")
-# def gender_search():
-#     query = request.args.get("gender")
-#     print("gender query: " + str(query))
-#     pref = ""
-#     # men
-#     if query == "male":
-#         pref = "for men"
-#     # women, idk why it's on but i'm j rolling w it
-#     elif query == "on":
-#         pref = "for women"
-#     # no pref
-#     else:
-#         pref = "for women and men"
-#     gender = pref
-#     return json.dumps(pref)
-
 # NC: uses gender_search to filter by input gender preference.
 # Takes in perfume_data JSON and a list of ids that correspond to perfumes.
 # Returns a list of filtered ids that correspond to the input gender preference.
+
+
 def gender_filter(perfume_data, perfume_ids, gender_filter):
     # set query to result of gender search somehow, this doesn't work
     # query = gender_search()
@@ -188,26 +159,10 @@ def rating_threshold_filter(perfume_data, perfume_ids, threshold=3.0):
             res.append(id)
     return res
 
-
-# def perfume_sql_search():
-#     """
-#     form of output: list of dictionaries [{perfume name 1:___, brand:____, notes:____, description:____}, {}....}]
-#     """
-#     query_sql = f"""SELECT * FROM perfumes"""
-#     keys = ["name", "brand", "description", "notes", "imageURL"]
-#     data = mysql_engine.query_selector(query_sql)
-#     db = [dict(zip(keys, i)) for i in data]
-#     for i in range(len(db)):
-#         db[i]['perfume_id'] = i
-#     return db
-
-
-# def get_perfume_db():
-#     return perfume_sql_search()
-
-
 # *ONLY FOR IDS IN ids* loop through all the top middle bottom notes, returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
 # THIS IS THE FILTERED PERFUME DATA TO USE
+
+
 def perfume_json_to_all_notes(perfume_json, ids):
     top_note_json = perfume_json['top notes']
     middle_note_json = perfume_json['middle notes']
@@ -389,17 +344,6 @@ def results(top_5, perf_json):
         info["desc"] = perf_json["description"][top_5[i][0]]
         final.append(info)
     return final
-
-    # "img": "https://fimgs.net/mdimg/perfume/375x500.62615.jpg",
-    #     "name": "Name1",
-    #     "brand": "Brand1",
-    #     "rating": 3.9,
-    #     "gender": "For women"
-    #     "topnote": "top1, top2, top3",
-    #     "middlenote": "mid1, mid2, mid3",
-    #     "bottomnote": "bot1, bot2, bot3",
-    #     "desc": "description1 description1 description1 description1
-
 
 #     final = []
 #     perf_dict = {}

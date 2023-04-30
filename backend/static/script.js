@@ -94,28 +94,6 @@ function returnResults() {
       // There was an error
       console.warn('Something went wrong.', err)
     })
-
-  // todo: call a backend endpoint here & pass the query to retrieve the top 3 results data and store them as 'results'
-  // for now use a dummy data
-
-  //   fetch("/similar?" + new URLSearchParams({ title: query }).toString())
-  //   .then((response) => response.json())
-  //   .then(results.forEach(res => {
-
-  //     let tempDiv = document.createElement('div')
-  //     tempDiv.innerHTML = resultTemplate(
-  //       res.img,
-  //       res.name,
-  //       res.brand,
-  //       res.notes,
-  //       res.desc)
-  //     document.getElementById('result-box').appendChild(tempDiv)
-  // }));
-
-  // pseudocode
-  // fetch("/similar?" + new URLSearchParams({ title: query }).toString())
-  // .then(response) => response.json())
-  // .then(move the results.foreach here);
 }
 
 function resultTemplate(
