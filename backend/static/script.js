@@ -23,6 +23,9 @@ console.log("Window onload is", window.onload);
 // }
 
 const button = document.getElementById('search-button')
+const perfSearchBox = document.querySelector(".input-box")
+const perfAutoBox = document.querySelector("#perf-auto-box")
+const perfInputBox = document.querySelector("#search-text")
 console.log(button)
 button.addEventListener('click', returnResults)
 
@@ -148,34 +151,46 @@ function noResultTemplate() {
   return `<div class = 'result-card'> No results found.</div>`
 }
 
-// function loadProfSuggestion(){
-//   profInputBox.onkeyup = (e)=>{
-//     let userData = e.target.value
-//     let emptyArray = []
-//     let allList = []
-//     if(userData!=""){
-//       fetch(
-//           "/suggestion/perf?" +
-//           new URLSearchParams({
-//             title: userData,
-//           }).toString()
-//         ).then((response) => response.json())
-//         .then((data) =>
-//           emptyArray = data,
-//         ).then(()=>{
-//           emptyArray = emptyArray.map((i)=>{
-//           return i = "<li>"+i+"</li>"
-//           }),
-//           (
-//             profSearchBox.classList.add("active"),
-//             profAutoBox.innerHTML = emptyArray.join(''),
-//             allList = profAutoBox.querySelectorAll("li"),
-//             setProfClickable(allList)
-//           )
-//         }
-//       );
-//     }else{
-//       profSearchBox.classList.remove("active")
-//     }
-//   }
-// }
+function setPerfClickable(list){
+  for(let i=0;i<list.length;i++){
+    list[i].setAttribute("onclick","selectPerf(this)")
+  }
+}
+
+function selectPerf(element){
+  let selectUserData = element.textContent;
+  perfInputBox.value=selectUserData;
+  perfSearchBox.classList.remove("active")
+}
+
+function loadPerfSuggestion(){
+  perfInputBox.onkeyup = (e)=>{
+    let userData = e.target.value
+    let emptyArray = []
+    let allList = []
+    if(userData!=""){
+      fetch(
+          "/suggestion/perf?" +
+          new URLSearchParams({
+            name: userData,
+          }).toString()
+        ).then((response) => response.json())
+        .then((data) =>
+          emptyArray = data,
+        ).then(()=>{
+          emptyArray = emptyArray.map((i)=>{
+          return i = "<li>"+i+"</li>"
+          }),
+          (
+            perfSearchBox.classList.add("active"),
+            perfAutoBox.innerHTML = emptyArray.join(''),
+            allList = perfAutoBox.querySelectorAll("li"),
+            setPerfClickable(allList)
+          )
+        }
+      );
+    }else{
+      perfSearchBox.classList.remove("active")
+    }
+  }
+}

@@ -27,6 +27,7 @@
             type="text"
             placeholder="Search for a fragrance"
             id="search-text"
+            onkeyup="loadPerfSuggestion()"
             style="background-color: #efe4e0; width: 400px"
           />
         </div>
@@ -37,6 +38,8 @@
           value="SEARCH"
           style="width: 100px"
         />
+      </div>
+      <div id="perf-auto-box">
       </div>
 
       <div class="filter-level">

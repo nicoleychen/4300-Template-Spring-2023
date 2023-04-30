@@ -11,6 +11,7 @@ import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
+from fuzzywuzzy import fuzz
 
 from dotenv import load_dotenv
 
@@ -73,6 +74,13 @@ def load_perfume_data():
 
 
 perfume_json = load_perfume_data()
+
+# search autocomplete 
+@app.route("/suggestion/perf")
+def suggest_perf():
+    text = request.args.get("name")
+    print(perfume_name_suggest(text))
+    return perfume_name_suggest(text)
 
 # checks if query is in dataset or not
 
@@ -149,7 +157,41 @@ def similar_search():
 
     return json.dumps(result)
 
-# NC: uses gender_search to filter by input gender preference.
+
+"""
+CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-recommender/blob/master/backend/app.py
+note: functions for edit distance in dropdowns
+"""
+def perfume_name_suggest(input_perf):
+    perf_scores = {}
+    perf_name_list = get_perfume_names(perfume_json)
+    # perf_list is json file
+    for perf in perf_name_list:
+        score = fuzz.partial_ratio(input_perf.lower(), perf.lower())
+        perf_scores[perf] = score
+    sorted_perfs = sorted(perf_scores.items(), key=lambda x:x[1], reverse=True)[:5]
+    return json.dumps([perf[0] for prof in sorted_perfs])
+
+
+# NC: gets input gender preference from frontend and returns it
+# @app.route("/gender_pref")
+# def gender_search():
+#     query = request.args.get("gender")
+#     print("gender query: " + str(query))
+#     pref = ""
+#     # men
+#     if query == "male":
+#         pref = "for men"
+#     # women, idk why it's on but i'm j rolling w it
+#     elif query == "on":
+#         pref = "for women"
+#     # no pref
+#     else:
+#         pref = "for women and men"
+#     gender = pref
+#     return json.dumps(pref)
+
+# NC: uses gender_search to filter by input gender preference. 
 # Takes in perfume_data JSON and a list of ids that correspond to perfumes.
 # Returns a list of filtered ids that correspond to the input gender preference.
 
