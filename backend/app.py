@@ -77,14 +77,18 @@ def episodes_search():
 def load_perfume_data():
     f = open('perfume_data_combined.json')
     data = json.load(f)
-    for i in range(10):
-        print(data["name"][str(i)])
+    # for i in range(10):
+    #     print(data["name"][str(i)])
+    print("JSON succesfully loaded!")
     f.close()
     return data
+
 
 perfume_json = load_perfume_data()
 
 # checks if query is in dataset or not
+
+
 @app.route("/testing")
 def testing_search():
     query = request.args.get("name")
@@ -93,6 +97,21 @@ def testing_search():
         if name == query:
             return json.dumps(True)
     return json.dumps(False)
+
+
+@app.route("/self")
+def get_query_info():
+    result = []
+
+    name = request.args.get("name")
+
+    exists = False
+    for _, perf_name in perfume_json["name"].items():
+        if perf_name == name:
+            exists = True
+    if not exists:
+        return json.dumps(result)
+
 
 # this is main route combining query and gender preference
 @app.route("/similar")
@@ -120,12 +139,12 @@ def similar_search():
     # 3. jaccard sim filter
     num_perfumes = len(rated_ids)
     perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
-    
+
     jaccard = build_perf_sims_jac(num_perfumes, perf_data)
     perfume_ind_to_id = perfume_index_to_id(perf_data)
     ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
     result = results(ranked, perfume_json)
-    
+
     return json.dumps(result)
 
 
@@ -147,7 +166,7 @@ def similar_search():
 #     gender = pref
 #     return json.dumps(pref)
 
-# NC: uses gender_search to filter by input gender preference. 
+# NC: uses gender_search to filter by input gender preference.
 # Takes in perfume_data JSON and a list of ids that correspond to perfumes.
 # Returns a list of filtered ids that correspond to the input gender preference.
 def gender_filter(perfume_data, perfume_ids, gender_filter):
@@ -161,14 +180,14 @@ def gender_filter(perfume_data, perfume_ids, gender_filter):
 
 
 # NC: takes in perfume_data JSON and a list of ids that correspond to perfumes.
-# Returns a filtered list of ids that only correspond to those with above 3 star ratings. 
-def rating_threshold_filter(perfume_data, perfume_ids, threshold = 3.0):
+# Returns a filtered list of ids that only correspond to those with above 3 star ratings.
+def rating_threshold_filter(perfume_data, perfume_ids, threshold=3.0):
     res = []
     for id in perfume_ids:
-        if (perfume_data["rating"][str(id)])!= "NA" and float(perfume_data["rating"][str(id)]) > threshold:
+        if (perfume_data["rating"][str(id)]) != "NA" and float(perfume_data["rating"][str(id)]) > threshold:
             res.append(id)
     return res
-    
+
 
 # def perfume_sql_search():
 #     """
@@ -199,60 +218,69 @@ def perfume_json_to_all_notes(perfume_json, ids):
             perf = {}
             perf['id'] = id
             perf['name'] = perfume_json["name"][id]
-            perf['notes'] = top_note_json[id] + middle_note_json[id] + base_note_json[id]
+            perf['notes'] = top_note_json[id] + \
+                middle_note_json[id] + base_note_json[id]
             res.append(perf)
     return res
 
+
 def get_perfume_names(perf_json):
-# gets all perfume names
+    # gets all perfume names
     names = set(perf_json['name'].values())
     return names
 
 
 def perfume_id_to_index(filtered_perf):
-# Builds dictionary where keys are the perfume id, and values are the index
-# takes in filtered perfume
+    # Builds dictionary where keys are the perfume id, and values are the index
+    # takes in filtered perfume
     res = {}
     for i in range(len(filtered_perf)):
         perfume = filtered_perf[i]
         res[perfume['id']] = i
     return res
 
+
 def perfume_index_to_id(filtered_perf):
-# Builds dictionary where keys are the perfume id numbers, and values are the index
-# takes in filtered perfume
+    # Builds dictionary where keys are the perfume id numbers, and values are the index
+    # takes in filtered perfume
     res = {}
     temp = perfume_id_to_index(filtered_perf)
     for k, v in temp.items():
         res[v] = k
     return res
 
+
 def perfume_id_to_name(perf_json):
-# Dictionary {id : name}
+    # Dictionary {id : name}
     return perf_json['name']
 
+
 def perfume_name_to_id(perf_json):
-# Dictionary {name : id}
+    # Dictionary {name : id}
     res = {}
     for k, v in perf_json['name'].items():
         res[v] = k
     return res
 
+
 def perfume_name_to_index(filtered_perf):
-# Dictionary {name : ind}
+    # Dictionary {name : ind}
     res = {}
     for i in range(len(filtered_perf)):
-       res[filtered_perf[i]['name']] = i
+        res[filtered_perf[i]['name']] = i
     return res
 
+
 def perfume_index_to_name(filtered_perf):
-# Dictionary {ind : name}
+    # Dictionary {ind : name}
     res = {}
     for i in range(len(filtered_perf)):
-       res[i] = filtered_perf[i]['name']
+        res[i] = filtered_perf[i]['name']
     return res
 
 # get query perfume
+
+
 def check_query(input_query, perf_json):
     # query = input_query.lower()
     perfume_names = get_perfume_names(perf_json)
@@ -305,13 +333,15 @@ def build_perf_sims_jac(n_perf, input_data):
                 category_2 = set(input_data[j]["notes"])
                 intersect = len(category_1.intersection(category_2))
                 union = len(category_1.union(category_2))
-                if union ==0:
+                if union == 0:
                     perf_sims[i][j] = 0
                 else:
                     perf_sims[i][j] = intersect/union
     return perf_sims
 
 # rank all perfumes, and return top 3
+
+
 def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
@@ -360,12 +390,12 @@ def results(top_5, perf_json):
         final.append(info)
     return final
 
-    # "img": "https://fimgs.net/mdimg/perfume/375x500.62615.jpg", 
-    #     "name": "Name1", 
-    #     "brand": "Brand1", 
+    # "img": "https://fimgs.net/mdimg/perfume/375x500.62615.jpg",
+    #     "name": "Name1",
+    #     "brand": "Brand1",
     #     "rating": 3.9,
     #     "gender": "For women"
-    #     "topnote": "top1, top2, top3", 
+    #     "topnote": "top1, top2, top3",
     #     "middlenote": "mid1, mid2, mid3",
     #     "bottomnote": "bot1, bot2, bot3",
     #     "desc": "description1 description1 description1 description1
