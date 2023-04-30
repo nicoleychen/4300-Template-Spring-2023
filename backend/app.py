@@ -101,7 +101,7 @@ def get_query_info():
 
     exists = False
     for i, perf_name in perfume_json["name"].items():
-        if perf_name == name:
+        if perf_name.lower() == name.lower():
             idx = i
             exists = True
 
@@ -134,7 +134,7 @@ def similar_search():
 
     exists = False
     for _, perf_name in perfume_json["name"].items():
-        if perf_name == name:
+        if perf_name.lower() == name.lower():
             exists = True
     if not exists:
         return json.dumps(result)
