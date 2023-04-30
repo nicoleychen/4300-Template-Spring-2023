@@ -89,16 +89,30 @@ def testing_search():
 
 @app.route("/self")
 def get_query_info():
-    result = []
-
     name = request.args.get("name")
 
     exists = False
-    for _, perf_name in perfume_json["name"].items():
+    for i, perf_name in perfume_json["name"].items():
         if perf_name == name:
+            idx = i
             exists = True
+
     if not exists:
-        return json.dumps(result)
+        return json.dumps(False)
+
+    info = {}
+    info["img"] = perfume_json["image"][idx]
+    info["gender"] = perfume_json["for_gender"][idx]
+    info["name"] = perfume_json["name"][idx]
+    info["brand"] = perfume_json["company"][idx]
+    info["rating"] = perfume_json["rating"][idx]
+    info["gender"] = perfume_json["for_gender"][idx]
+    info["topnote"] = perfume_json["top notes"][idx]
+    info["middlenote"] = perfume_json["middle notes"][idx]
+    info["bottomnote"] = perfume_json["base notes"][idx]
+    info["desc"] = perfume_json["description"][idx]
+
+    return json.dumps(info)
 
 
 # this is main route combining query and gender preference

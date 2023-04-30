@@ -49,6 +49,31 @@ function returnResults() {
     gender_filter = ''
   }
 
+  fetch(
+    '/self?' +
+      new URLSearchParams({
+        name: query,
+      }).toString()
+  ).then(function (response) {
+    return response.json()
+  })
+  .then(function (data) {
+    const res = data
+    let tempDiv = document.createElement('div')
+          tempDiv.innerHTML = resultTemplate(
+            res.img,
+            res.name,
+            res.brand,
+            res.rating,
+            res.gender,
+            res.topnote,
+            res.middlenote,
+            res.bottomnote,
+            res.desc
+          )
+    document.getElementById('query-box').appendChild(tempDiv)
+  })
+
   document.getElementById('result-heading-text').textContent =
     'Results similar to "' + query + '":'
 
