@@ -20,67 +20,61 @@ console.log("Window onload is", window.onload);
 //     });
 //      });
 //   });
-// }  
+// }
 
-const button = document.getElementById("search-button");
-console.log(button);
-button.addEventListener("click", returnResults);
+const button = document.getElementById('search-button')
+console.log(button)
+button.addEventListener('click', returnResults)
 
 function returnResults() {
   // const removeText = document.getElementsByClassName("no-result");
   // removeText[0].parentNode.removeChild(removeText[0]);
 
-  const removeBoxes = document.getElementsByClassName("result-card");
-  while(removeBoxes.length > 0){
-      removeBoxes[0].parentNode.removeChild(removeBoxes[0]);
+  const removeBoxes = document.getElementsByClassName('result-card')
+  while (removeBoxes.length > 0) {
+    removeBoxes[0].parentNode.removeChild(removeBoxes[0])
   }
 
-  let query = document.getElementById("search-text").value;
-  let male_pref = document.getElementById("male-button").checked;
-  let female_pref = document.getElementById("female-button").checked;
-  let no_pref = document.getElementById("no-pref-button").checked;
+  let query = document.getElementById('search-text').value
+  let male_pref = document.getElementById('male-button').checked
+  let female_pref = document.getElementById('female-button').checked
+  let no_pref = document.getElementById('no-pref-button').checked
 
-  let gender_filter = ""
-  if (male_pref){
-    gender_filter = "for women"
-  }else if (female_pref){
-    gender_filter = "for men"
-  }else{
-    gender_filter = ""
+  let gender_filter = ''
+  if (male_pref) {
+    gender_filter = 'for women'
+  } else if (female_pref) {
+    gender_filter = 'for men'
+  } else {
+    gender_filter = ''
   }
 
-  document.getElementById("result-heading-text").textContent =
-    'Results similar to "' + query + '":';
+  document.getElementById('result-heading-text').textContent =
+    'Results similar to "' + query + '":'
 
-  //JJ: testing function -- console log true if the query exsists in the dataset & false otherwise
-  // fetch("/testing?" + new URLSearchParams({ name: query }).toString())
-  // .then(function (response) {
-  //     // The API call was successful!
-  //     return response.json();
-  //   }).then(function (data) {
-  //     // This is the JSON from our response
-  //     console.log(data);
-  //   }).catch(function (err) {
-  //     // There was an error
-  //     console.warn('Something went wrong.', err);
-  //   });
-
-  fetch("/similar?" + new URLSearchParams({ name:query, gender_pref:gender_filter}).toString())
-  .then(function (response){
+  fetch(
+    '/similar?' +
+      new URLSearchParams({
+        name: query,
+        gender_pref: gender_filter
+      }).toString()
+  )
+    .then(function (response) {
       // The API call was successful!
-      return response.json();
-    }).then(function (data) {
+      return response.json()
+    })
+    .then(function (data) {
       // This is the JSON from our response
-      console.log(data);
-      const results = data;
+      console.log(data)
+      const results = data
       if (Object.values(results).length === 0) {
-        console.log("NOT FOUND IN DATASET")
-        let tempDiv = document.createElement("div");
-        tempDiv.innerHTML = noResultTemplate();
-        document.getElementById("result-box").appendChild(tempDiv);
+        console.log('NOT FOUND IN DATASET')
+        let tempDiv = document.createElement('div')
+        tempDiv.innerHTML = noResultTemplate()
+        document.getElementById('result-box').appendChild(tempDiv)
       } else {
-        results.forEach((res) => {
-          let tempDiv = document.createElement("div");
+        results.forEach(res => {
+          let tempDiv = document.createElement('div')
           tempDiv.innerHTML = resultTemplate(
             res.img,
             res.name,
@@ -91,17 +85,15 @@ function returnResults() {
             res.middlenote,
             res.bottomnote,
             res.desc
-          );
-          document.getElementById("result-box").appendChild(tempDiv);
-        });
+          )
+          document.getElementById('result-box').appendChild(tempDiv)
+        })
       }
-
-    }).catch(function (err) {
+    })
+    .catch(function (err) {
       // There was an error
-      console.warn('Something went wrong.', err);
-    });
-  
-
+      console.warn('Something went wrong.', err)
+    })
 
   // todo: call a backend endpoint here & pass the query to retrieve the top 3 results data and store them as 'results'
   // for now use a dummy data
@@ -126,7 +118,17 @@ function returnResults() {
   // .then(move the results.foreach here);
 }
 
-function resultTemplate(img, name, brand, rating, gender, topnote, middlenote, bottomnote, desc) {
+function resultTemplate(
+  img,
+  name,
+  brand,
+  rating,
+  gender,
+  topnote,
+  middlenote,
+  bottomnote,
+  desc
+) {
   return `<div class='result-card'>
             <img src=${img} class='fragrance-img'>
             <h3 class='fragrance-name'>${name} by ${brand}</h3>
@@ -136,11 +138,11 @@ function resultTemplate(img, name, brand, rating, gender, topnote, middlenote, b
             <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
             <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
             <p class='fragrance-detail'>Description: ${desc}</p>
-        </div>`;
+        </div>`
 }
 
 function noResultTemplate() {
-  return `<div class = 'result-card'> No results found.</div>`;
+  return `<div class = 'result-card'> No results found.</div>`
 }
 
 function loadProfSuggestion(){
@@ -173,4 +175,4 @@ function loadProfSuggestion(){
       profSearchBox.classList.remove("active")
     }
   }
-  }
+}
