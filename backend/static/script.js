@@ -52,6 +52,8 @@ function returnResults() {
     gender_filter = ''
   }
 
+  document.getElementById('query-heading-text').textContent = '"' + query + '":'
+
   fetch(
     '/self?' +
       new URLSearchParams({
