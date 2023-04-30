@@ -83,7 +83,7 @@ def episodes_search():
 # app.run(debug=True)
 
 # search autocomplete 
-@app.route("/suggestion/prof")
+@app.route("/suggestion/perf")
 def suggest_perf():
     text = request.args.get("name")
     return perfume_name_suggest(text)

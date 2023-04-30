@@ -145,34 +145,34 @@ function noResultTemplate() {
   return `<div class = 'result-card'> No results found.</div>`
 }
 
-function loadProfSuggestion(){
-  profInputBox.onkeyup = (e)=>{
-    let userData = e.target.value
-    let emptyArray = []
-    let allList = []
-    if(userData!=""){
-      fetch(
-          "/suggestion/prof?" +
-          new URLSearchParams({
-            title: userData,
-          }).toString()
-        ).then((response) => response.json())
-        .then((data) =>
-          emptyArray = data,
-        ).then(()=>{
-          emptyArray = emptyArray.map((i)=>{
-          return i = "<li>"+i+"</li>"
-          }),
-          (
-            profSearchBox.classList.add("active"),
-            profAutoBox.innerHTML = emptyArray.join(''),
-            allList = profAutoBox.querySelectorAll("li"),
-            setProfClickable(allList)
-          )
-        }
-      );
-    }else{
-      profSearchBox.classList.remove("active")
-    }
-  }
-}
+// function loadProfSuggestion(){
+//   profInputBox.onkeyup = (e)=>{
+//     let userData = e.target.value
+//     let emptyArray = []
+//     let allList = []
+//     if(userData!=""){
+//       fetch(
+//           "/suggestion/perf?" +
+//           new URLSearchParams({
+//             title: userData,
+//           }).toString()
+//         ).then((response) => response.json())
+//         .then((data) =>
+//           emptyArray = data,
+//         ).then(()=>{
+//           emptyArray = emptyArray.map((i)=>{
+//           return i = "<li>"+i+"</li>"
+//           }),
+//           (
+//             profSearchBox.classList.add("active"),
+//             profAutoBox.innerHTML = emptyArray.join(''),
+//             allList = profAutoBox.querySelectorAll("li"),
+//             setProfClickable(allList)
+//           )
+//         }
+//       );
+//     }else{
+//       profSearchBox.classList.remove("active")
+//     }
+//   }
+// }
