@@ -28,6 +28,8 @@ const perfAutoBox = document.querySelector("#perf-auto-box")
 const perfInputBox = document.querySelector("#search-text")
 console.log(button)
 button.addEventListener('click', returnResults)
+let votes = new Map();
+
 
 function returnResults() {
   // const removeText = document.getElementsByClassName("no-result");
@@ -137,16 +139,40 @@ function resultTemplate(
   bottomnote,
   desc
 ) {
+  like_disabled = "";
+  dislike_disabled = "";
+  happy_button = "happy_empty.png";
+  sad_button = "sad_empty.png";
+  if (votes.has(name)) {
+    if (votes.get(name) === 1) {
+      like_disabled = "disabled: disabled";
+      happy_button = "happy_filled.png";
+    } else if (votes.get(name) === -1) {
+      dislike_disabled = "disabled: disabled";
+      sad_button = "sad_filled.png";
+    }
+  }
   return `<div class='result-card'>
-            <img src=${img} class='fragrance-img'>
-            <h3 class='fragrance-name'>${name} by ${brand}</h3>
-            <p class = 'fragrance-detail'> Rating: ${rating}</p> 
-            <p class = 'fragrance-detail'> Gender: ${gender}</p> 
-            <p class = 'fragrance-detail'> Top notes: ${topnote} </p>
-            <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
-            <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
-            <p class='fragrance-detail'>Description: ${desc}</p>
-        </div>`
+  <div class="vote-button-group">
+  <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
+    <img src="/static/images/${happy_button}" id="like-${name}" alt="Like"/>
+  </button>
+  <button class="vote_button" type="submit" ${dislike_disabled} onclick="updateRelevance(\'${name}\', -1)" id="dislike-button-${name}">
+    <img src="/static/images/${sad_button}" id="dislike-${name}" alt="Dislike"/>
+  </button>
+</div>
+      <div class='result-card box'>
+
+        <img src=${img} class='fragrance-img'>
+        <h3 class='fragrance-name'>${name} by ${brand}</h3>
+        <p class = 'fragrance-detail'> Rating: ${rating}</p> 
+        <p class = 'fragrance-detail'> Gender: ${gender}</p> 
+        <p class = 'fragrance-detail'> Top notes: ${topnote} </p>
+        <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
+        <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
+        <p class='fragrance-detail'>Description: ${desc}</p>
+      </div>
+  </div>`
 }
 
 function noResultTemplate() {
@@ -164,6 +190,43 @@ function selectPerf(element){
   perfInputBox.value=selectUserData;
   perfSearchBox.classList.remove("active")
 }
+
+function updateRelevance(name, update) {
+  votes.set(name, update);
+  if (update === 1) {
+    document.getElementById("like-button-" + name).disabled = true;
+    document.getElementById("dislike-button-" + name).disabled = false;
+    document.getElementById("like-" + name).src =
+      "/static/images/happy_filled.png";
+    document.getElementById("dislike-" + name).src =
+      "/static/images/sad_empty.png";
+    // document.getElementById("dislike-button-" + name).img = (
+    //   <img src="/static/images/up_clicked.png" alt="Thumb Up" />
+    // );
+  } else if (update === -1) {
+    document.getElementById("dislike-button-" + name).disabled = true;
+    document.getElementById("like-button-" + name).disabled = false;
+    document.getElementById("like-" + name).src = "/static/images/happy_empty.png";
+    document.getElementById("dislike-" + name).src =
+      "/static/images/sad_filled.png";
+  }
+  update_like_dislike_list();
+}
+
+function update_like_dislike_list() {
+  like_list_string = "";
+  dislike_list_string = "";
+  for (let [perf, vote] of votes) {
+    if (vote === 1) {
+      like_list_string += "<p>" + perf + "</p>";
+    } else if (vote === -1) {
+      dislike_list_string += "<p>" + perf + "</p>";
+    }
+  }
+  document.getElementById("like-list").innerHTML = like_list_string;
+  document.getElementById("dislike-list").innerHTML = dislike_list_string;
+}
+
 
 function loadPerfSuggestion(){
   perfInputBox.onkeyup = (e)=>{

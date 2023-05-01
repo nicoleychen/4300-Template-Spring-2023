@@ -1,3 +1,10 @@
+body {
+    font-family: 'Open Sans', sans-serif;
+    /* line-height: 2.2em; */
+    margin: 0px auto 0px auto;
+    /* background-color: rgb(242, 242, 242); */
+  }
+
 .full-body-container{
     position: absolute;
     top:0;
@@ -141,7 +148,7 @@
     border-color: #F0AFAD;
     border-width: 2px;
     border-radius: 20px;
-    margin: 10px;
+    margin: 5px;
     height: auto;
     overflow: auto;
     padding: 0px 20px 0px 20px ;
@@ -189,4 +196,35 @@
     top: 20px;
     font-family: 'Montserrat', sans-serif;
     display: inline-block;
+}
+
+.vote-button-group {
+    margin: auto;
+    width: 8%;
+    /* float: left; */
+  }
+  
+.vote_button {
+    margin-left: 10px;
+    margin-right: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    /* height: 20px; */
+    padding: 2px;
+    background-color: white;
+    border: 0.5px white solid;
+    cursor: pointer;
+}
+
+.vote_button img {
+    /* margin: 5px; */
+    margin-left: auto;
+    margin-right: auto;
+    height: 30px;
+    cursor: pointer;
+}
+
+#like-list, #dislike-list {
+    margin-left: 40px;
+    font-style: italic;
 }

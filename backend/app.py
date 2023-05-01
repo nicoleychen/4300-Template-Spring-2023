@@ -12,7 +12,6 @@ from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 from fuzzywuzzy import fuzz
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -422,13 +421,13 @@ def results(top_5, perf_json):
     
 #     """
 #    tokens = tokenizer.tokenize(input.lower())
-    # query_word_counts = {}
+#     query_word_counts = {}
     
-    # for word in tokens:
-    #     if word in query_word_counts: 
-    #         query_word_counts[word] += 1
-    #     else: 
-    #         query_word_counts[word] = 1
+#     for word in tokens:
+#         if word in query_word_counts: 
+#             query_word_counts[word] += 1
+#         else: 
+#             query_word_counts[word] = 1
     
 
 # def build_inverted_index(reviews):
