@@ -23,7 +23,7 @@ console.log("Window onload is", window.onload);
 // }
 
 const button = document.getElementById('search-button')
-const perfSearchBox = document.querySelector(".input-box")
+const perfSearchBox = document.querySelector("#perf-search-box")
 const perfAutoBox = document.querySelector("#perf-auto-box")
 const perfInputBox = document.querySelector("#search-text")
 console.log(button)

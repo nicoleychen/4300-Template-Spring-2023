@@ -96,6 +96,29 @@
     outline: 0;
 }
 
+#perf-auto-box{
+    box-shadow: 0 3px 10px #ccc;
+    max-width: 98%;
+  }
+  
+#perf-search-box.active #perf-auto-box li{
+    display: block;
+  }
+
+#prof-search-box {
+    background-color: #fff;
+  }
+
+#perf-auto-box li{
+    list-style: none;
+    padding: 3px 16px;
+    font-family: 'Open Sans', sans-serif;
+    display: none;
+  }
+#perf-auto-box li:hover{
+    background-color: #efefef;
+  }
+
 .result-box{
     width: 700px;
     margin-top:10px; 

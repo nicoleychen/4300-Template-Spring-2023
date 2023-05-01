@@ -159,7 +159,7 @@ def similar_search():
 
 
 """
-CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-recommender/blob/master/backend/app.py
+DO NOT DELETE: CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-recommender/blob/master/backend/app.py
 note: functions for edit distance in dropdowns
 """
 def perfume_name_suggest(input_perf):
