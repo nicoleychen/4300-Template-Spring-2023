@@ -75,7 +75,9 @@ def load_perfume_data():
 
 perfume_json = load_perfume_data()
 
-# search autocomplete 
+# search autocomplete
+
+
 @app.route("/suggestion/perf")
 def suggest_perf():
     text = request.args.get("name")
@@ -123,6 +125,20 @@ def get_query_info():
     return json.dumps(info)
 
 
+@app.route("/rocchio")
+def new_results():
+    # tfidf = build_vectorizer(5000, "english")
+    # perf_by_term = tfidf.fit_transform(___ for d in ____).toarray()
+    # index_to_vocab = {i:v for i, v in enumerate(tfidf.get_feature_names())}
+
+    # rocchio_vector = rocchio(perfume name, relevant, irrelevant, perf_by_term, perf_name_to_index,
+    #                          a=.3, b=.3, c=.8, clip = True)
+
+    # ranked = top_10_with_rocchio(relevant, irrelevant, perf_by_term, perf_name_to_index, perf_index_to_name, rocchio)
+    # results = top_5(ranked, perfume_json)
+    pass
+
+
 # this is main route combining query and gender preference
 @app.route("/similar")
 def similar_search():
@@ -162,6 +178,8 @@ def similar_search():
 DO NOT DELETE: CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-recommender/blob/master/backend/app.py
 note: functions for edit distance in dropdowns
 """
+
+
 def perfume_name_suggest(input_perf):
     perf_scores = {}
     perf_name_list = get_perfume_names(perfume_json)
@@ -169,7 +187,8 @@ def perfume_name_suggest(input_perf):
     for perf in perf_name_list:
         score = fuzz.partial_ratio(input_perf.lower(), perf.lower())
         perf_scores[perf] = score
-    sorted_perfs = sorted(perf_scores.items(), key=lambda x:x[1], reverse=True)[:5]
+    sorted_perfs = sorted(perf_scores.items(),
+                          key=lambda x: x[1], reverse=True)[:5]
     return json.dumps([perf[0] for perf in sorted_perfs])
 
 
@@ -191,7 +210,7 @@ def perfume_name_suggest(input_perf):
 #     gender = pref
 #     return json.dumps(pref)
 
-# NC: uses gender_search to filter by input gender preference. 
+# NC: uses gender_search to filter by input gender preference.
 # Takes in perfume_data JSON and a list of ids that correspond to perfumes.
 # Returns a list of filtered ids that correspond to the input gender preference.
 
@@ -402,17 +421,15 @@ def results(top_5, perf_json):
     return final
 
 
-
-
-#functioons for roccchio 
+# functioons for roccchio
 def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
     """Returns a TfidfVectorizer object with the above preprocessing properties.
         The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
         of the perfume i for the word j.
-    
+
     Note: This function may log a deprecation warning. This is normal, and you
     can simply ignore it.
-    
+
     Parameters
     ----------
     max_features : int
@@ -432,20 +449,21 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
     TfidfVectorizer
         A TfidfVectorizer object with the given parameters as its preprocessing properties.
     """
-    v = TfidfVectorizer(max_features = max_features, stop_words = stop_words, max_df = max_df, min_df = min_df, norm=norm)
+    v = TfidfVectorizer(max_features=max_features, stop_words=stop_words,
+                        max_df=max_df, min_df=min_df, norm=norm)
     return v
 
 
-def rocchio(perf, relevant, irrelevant, input_doc_matrix, \
-            perf_name_to_index,a=.3, b=.3, c=.8, clip = True):
+def rocchio(perf, relevant, irrelevant, input_doc_matrix,
+            perf_name_to_index, a=.3, b=.3, c=.8, clip=True):
     """Returns a vector representing the modified query vector. 
-    
+
     Note: 
         If the `clip` parameter is set to True, the resulting vector should have 
         no negatve weights in it!
-        
+
         Also, be sure to handle the cases where relevant and irrelevant are empty lists.
-        
+
     Params: {query: String (the name of the movie being queried for),
              relevant: List (the names of relevant movies for query),
              irrelevant: List (the names of irrelevant movies for query),
@@ -457,46 +475,46 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix, \
     Returns: Numpy Array 
     """
     aq0 = a * input_doc_matrix[perf_name_to_index[perf]]
-    
+
     rel_len = len(relevant)
     if rel_len == 0:
-        rel_fraq = 0 
-    else: 
+        rel_fraq = 0
+    else:
         rel_fraq = 1/rel_len
 
     b_rel = np.zeros(len(aq0))
-    for i in relevant: 
+    for i in relevant:
         movie = input_doc_matrix[perf_name_to_index[i]]
         b_rel = np.add(b_rel, movie)
-        
-    b_rel = b_rel * b* rel_fraq
-    
+
+    b_rel = b_rel * b * rel_fraq
+
     nrel_len = len(irrelevant)
-    if nrel_len ==0: 
+    if nrel_len == 0:
         nrel_fraq = 0
-    else: 
+    else:
         nrel_fraq = 1/nrel_len
-    
+
     c_nrel = np.zeros(len(aq0))
-    for i in irrelevant: 
+    for i in irrelevant:
         movie = input_doc_matrix[perf_name_to_index[i]]
         c_nrel = np.add(c_nrel, movie)
-        
-    c_nrel = c_nrel * c * nrel_fraq 
-    
-    q1= np.zeros(len(aq0))
+
+    c_nrel = c_nrel * c * nrel_fraq
+
+    q1 = np.zeros(len(aq0))
     q1 = aq0 + b_rel - c_nrel
     return np.clip(q1, 0, None)
-        
-    
-def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
-            perf_name_to_index,perf_index_to_name,input_rocchio):
+
+
+def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
+                        perf_name_to_index, perf_index_to_name, input_rocchio):
     """Returns a list in the following format:
-        
+
         [(perf1, score1), (perf2, score2)..., (perf10,score10)],
-        
-    
-     
+
+
+
     Parameters
     ----------
     relevant_in : (query: str, [relevant documents]: str list) list 
@@ -516,142 +534,121 @@ def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
          Ex: {0:'perf_0', 1:'perf_1', .......}
     input_rocchio: function
         A function implementing the rocchio algorithm.
-        
+
     Returns
     -------
     dict
         Returns the top ten highest ranked perfumes and scores for each query in the format described above.
-        
+
     """
 
-    rocchio = input_rocchio(relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
+    rocchio = input_rocchio(
+        relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
 
     sim = []
-    for doc in input_doc_matrix: 
+    for doc in input_doc_matrix:
         dots = np.dot(doc, rocchio)
         q_norm = np.linalg.norm(doc)
         d_norm = np.linalg.norm(rocchio)
         sim.append(dots/(q_norm*d_norm))
-        
-    indexes = np.argsort(sim)[::-1] 
+
+    indexes = np.argsort(sim)[::-1]
     indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
 
     movies = []
     for ind in range(10):
         movies.append((perf_index_to_name[indexes[ind]], sim[indexes[ind]]))
-                
+
     top_10 = movies[:10]
-                
-            
+
     return top_10
-            
-        
-    
-    
-    
 
 
+# IGNORE THIS
+# funcctions for cosine sim
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#IGNORE THIS 
-#funcctions for cosine sim 
- 
 # def build_query_word_counts(input):
 #     """ Builds an query_word_wounts from the messages.
 #     Arguments
 #     =========
-    
+
 #     input: 1 string of a description
-    
+
 #     Returns
 #     =======
-    
-#     query_word_counts: dictionary 
-#         For each term, the index contains 
-#         1 item that represents the count of 
+
+#     query_word_counts: dictionary
+#         For each term, the index contains
+#         1 item that represents the count of
 #         the term in the query  ==> count_of_term_in_doc
 #         query_word_counts[term] = count_of_term_in_doc
-    
+
 #     """
 #    tokens = tokenizer.tokenize(input.lower())
 #     query_word_counts = {}
-    
+
 #     for word in tokens:
-#         if word in query_word_counts: 
+#         if word in query_word_counts:
 #             query_word_counts[word] += 1
-#         else: 
+#         else:
 #             query_word_counts[word] = 1
-    
+
 
 # def build_inverted_index(reviews):
 #     """ Builds an inverted index from the reviews of the desired perfume.
-    
+
 #     Arguments
 #     =========
-    
+
 #     reviews: list of dictionaries
 #         Each message in this list already has a 'toks'
 #         field that contains the tokenized message.
  #         [{1: { "toks: ["I", "love", "u"]}}, {2 : {"toks:["I", "hate", "u"]}, ...]
 #     Returns
 #     =======
-    
+
 #     inverted_index: dict
-#         For each term, the index contains 
+#         For each term, the index contains
 #         a sorted list of tuples (doc_id, count_of_term_in_doc)
 #         such that tuples with smaller doc_ids appear first:
 #         inverted_index[term] = [(d1, tf1), (d2, tf2), ...]
-        
+
 #     Example
 #     =======
-    
+
 #     >> test_idx = build_inverted_index([
 #     ...    {'toks': ['to', 'be', 'or', 'not', 'to', 'be']},
 #     ...    {'toks': ['do', 'be', 'do', 'be', 'do']}])
-    
+
 #     >> test_idx['be']
 #     [(0, 2), (1, 2)]
-    
+
 #     >> test_idx['not']
 #     [(0, 1)]
-    
+
 #     """
 #     # YOUR CODE HERE
 #     inverted_idx = {}
-    
-#     for doc in range(len(reviews)-1): 
+
+#     for doc in range(len(reviews)-1):
 #         tokens = reviews[doc]["toks"]
-#         for word in tokens: 
-#             if word in inverted_idx:  
-#                 if doc in inverted_idx[word]: 
+#         for word in tokens:
+#             if word in inverted_idx:
+#                 if doc in inverted_idx[word]:
 #                     inverted_idx[word][doc] += 1
-#                 else: 
+#                 else:
 #                     inverted_idx[word][doc] = 1
-#             else: 
+#             else:
 #                 inverted_idx[word] = {}
 #                 inverted_idx[word][doc] = 1
-            
+
 #     sort_inverted_idx = {}
-#     for word in inverted_idx: 
+#     for word in inverted_idx:
 #         sort_list = list(inverted_idx[word].items())
 #         sort_list.sort(key=lambda i:i[0])
 #         sort_inverted_idx[word] = sort_list
-    
-#     return sort_inverted_idx
 
+#     return sort_inverted_idx
 
 
 # def compute_idf(inv_idx, n_reviews, min_df=10, max_df_ratio=0.95):
@@ -660,34 +657,34 @@ def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
 #     Hint: Make sure to use log base 2.
 #     Arguments
 #     =========
-    
+
 #     inv_idx: an inverted index as above
 #     n_docs: int,
 #         The number of documents.
 #     min_df: int,
 #         Minimum number of documents a term must occur in.
-#         Less frequent words get ignored. 
+#         Less frequent words get ignored.
 #         Documents that appear min_df number of times should be included.
 #     max_df_ratio: float,
 #         Maximum ratio of documents a term can occur in.
 #         More frequent words get ignored.
 #     Returns
 #     =======
-    
+
 #     idf: dict
 #         For each term, the dict contains the idf value.
-        
+
 #     """
-    
+
 #     # YOUR CODE HERE
 #     idf = {}
-    
-#     for term in inv_idx: 
+
+#     for term in inv_idx:
 #         df = len(inv_idx[term])
-#         if df >= min_df and df/n_reviews <= max_df_ratio: 
+#         if df >= min_df and df/n_reviews <= max_df_ratio:
 #             ratio = n_reviews/(1+df)
 #             idf[term] = np.log2(ratio)
-        
+
 #     return idf
 
 
@@ -705,12 +702,12 @@ def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
 #     norms: np.array, size: n_docs
 #         norms[i] = the norm of document i.
 #     """
-    
+
 #     # YOUR CODE HERE
 #     sums = np.zeros(n_reviews)
-#     for word in index: 
-#         for (doc, tf) in index[word]: 
-#             if word in idf: 
+#     for word in index:
+#         for (doc, tf) in index[word]:
+#             if word in idf:
 #                 sums[doc] += (tf*idf[word])**2
 #     norms = np.sqrt(sums)
 #     return norms
@@ -726,104 +723,102 @@ def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
 #         Each word is mapped to a count of how many times it appears in the query.
 #         In other words, query_word_counts[w] = the term frequency of w in the query.
 #         You may safely assume all words in the dict have been already lowercased.
-    
+
 #     index: the inverted index as above,
-    
+
 #     idf: dict,
 #         Precomputed idf values for the terms.
-    
+
 #     Returns
 #     =======
-    
+
 #     doc_scores: dict
 #         Dictionary mapping from doc ID to the final accumulated score for that doc
 #     """
-    
+
 #     doc_scores = {}
-    
-#     for word in query_word_counts: 
+
+#     for word in query_word_counts:
 #         if word in index:
-#             for (doc, tf) in index[word]: 
+#             for (doc, tf) in index[word]:
 #                 if doc in doc_scores:
 #                     doc_scores[doc] += (query_word_counts[word] * idf[word]) * (tf * idf[word])
-#                 else: 
-#                     doc_scores[doc] = (query_word_counts[word] * idf[word]) * (tf * idf[word])  
-        
+#                 else:
+#                     doc_scores[doc] = (query_word_counts[word] * idf[word]) * (tf * idf[word])
+
 #     return doc_scores
-
-
 
 
 # def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
 #     """ Search the collection of documents for the given query
-    
+
 #     Arguments
 #     =========
-    
+
 #     query: string,
 #         The query we are looking for.
-    
+
 #     index: an inverted index as above
-    
+
 #     idf: idf values precomputed as above
-    
+
 #     doc_norms: document norms as computed above
-    
+
 #     score_func: function,
 #         A function that computes the numerator term of cosine similarity (the dot product) for all documents.
 #         Takes as input a dictionary of query word counts, the inverted index, and precomputed idf values.
 #         (See Q7)
-    
+
 #     tokenizer: a TreebankWordTokenizer
-    
+
 #     Returns
 #     =======
-    
+
 #     results, list of tuples (score, doc_id)
 #         Sorted list of results such that the first element has
 #         the highest score, and `doc_id` points to the document
 #         with the highest score.
-    
-#     Note: 
-        
+
+#     Note:
+
 #     """
-    
+
 #     tokens = tokenizer.tokenize(query.lower())
 #     query_word_counts = {}
-    
+
 #     for word in tokens:
-#         if word in query_word_counts: 
+#         if word in query_word_counts:
 #             query_word_counts[word] += 1
-#         else: 
+#         else:
 #             query_word_counts[word] = 1
-            
+
 
 #     scores = score_func(query_word_counts, index, idf)
-    
-#     q_norm = 0 
-#     for word in query_word_counts: 
-#         if word in idf: 
+
+#     q_norm = 0
+#     for word in query_word_counts:
+#         if word in idf:
 #             q_norm += (query_word_counts[word]*idf[word])**2
 #     q_norm = np.sqrt(q_norm)
 
-#     for i in scores: 
+#     for i in scores:
 #         scores[i] = scores[i]/(doc_norms[i]*q_norm)
-        
+
 #     final_scores = []
 #     for tup in list(scores.items()):
 #         final_scores.append(tuple(reversed(tup)))
-        
-#     final_scores.sort(key=lambda item: item[0], reverse=True)
-        
-#     return final_scores[:5]
-    
 
-#rev_results(top_5, perf_json)
+#     final_scores.sort(key=lambda item: item[0], reverse=True)
+
+#     return final_scores[:5]
+
+
+# rev_results(top_5, perf_json)
     # """
     #     Take in list of top 5 perfumes ids and get the corresponding info
     #     top_5: list of dictionaries for each perfume - perf_dict
 
-    #     Returns: 
+    #     Returns:
     # """
     # final = []
     # for i in range(len(top_5)):
