@@ -523,24 +523,24 @@ def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
         Returns the top ten highest ranked perfumes and scores for each query in the format described above.
         
     """
-    
-        rocchio = input_rocchio(relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
+
+    rocchio = input_rocchio(relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
+
+    sim = []
+    for doc in input_doc_matrix: 
+        dots = np.dot(doc, rocchio)
+        q_norm = np.linalg.norm(doc)
+        d_norm = np.linalg.norm(rocchio)
+        sim.append(dots/(q_norm*d_norm))
         
-        sim = []
-        for doc in input_doc_matrix: 
-            dots = np.dot(doc, rocchio)
-            q_norm = np.linalg.norm(doc)
-            d_norm = np.linalg.norm(rocchio)
-            sim.append(dots/(q_norm*d_norm))
-            
-        indexes = np.argsort(sim)[::-1] 
-        indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
-        
-        movies = []
-        for ind in range(10):
-            movies.append((perf_index_to_name[indexes[ind]], sim[indexes[ind]]))
-                    
-        top_10 = movies[:10]
+    indexes = np.argsort(sim)[::-1] 
+    indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
+
+    movies = []
+    for ind in range(10):
+        movies.append((perf_index_to_name[indexes[ind]], sim[indexes[ind]]))
+                
+    top_10 = movies[:10]
                 
             
     return top_10
