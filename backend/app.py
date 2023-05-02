@@ -234,13 +234,12 @@ def similar_search():
     example_data = perfume_json_to_all_notes(example_json, rated_ids)
     name_to_index = perfume_name_to_index(example_data)
 
-    if rel_list != []: 
+    if rel_list[0] == '' and irrel_list[0] == '': 
         result = results(jacc_ranked, perfume_json)
     else: 
         cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, perfume_ind_to_id, rocchio)
         combined_ranked = scores(jacc_ranked, cos_ranked)
         result = results(combined_ranked, perfume_json)
-    
 
     return json.dumps(result)
 
@@ -476,7 +475,7 @@ def results(top_5, perf_json):
         Returns: 
     """
     final = []
-    for i in range(len(top_5)):
+    for i in range(5):
         info = {}
         info["img"] = perf_json["image"][top_5[i][0]]
         info["gender"] = perf_json["for_gender"][top_5[i][0]]
@@ -555,8 +554,8 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix,
 
     b_rel = np.zeros(len(aq0))
     for i in relevant:
-        movie = input_doc_matrix[perf_name_to_index[i]]
-        b_rel = np.add(b_rel, movie)
+        perfume = input_doc_matrix[perf_name_to_index[i]]
+        b_rel = np.add(b_rel, perfume)
 
     b_rel = b_rel * b * rel_fraq
 
@@ -568,8 +567,8 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix,
 
     c_nrel = np.zeros(len(aq0))
     for i in irrelevant:
-        movie = input_doc_matrix[perf_name_to_index[i]]
-        c_nrel = np.add(c_nrel, movie)
+        perfume = input_doc_matrix[perf_name_to_index[i]]
+        c_nrel = np.add(c_nrel, perfume)
 
     c_nrel = c_nrel * c * nrel_fraq
 
