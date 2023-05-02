@@ -633,7 +633,9 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
         dots = np.dot(doc, update)
         q_norm = np.linalg.norm(doc)
         d_norm = np.linalg.norm(update)
-        sim.append(dots/(q_norm*d_norm))
+        # fix div by zero error
+        norm_prod = q_norm*d_norm if q_norm*d_norm !=0 else .0001
+        sim.append(dots/(norm_prod))
 
     indexes = np.argsort(sim)[::-1]
     indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
