@@ -40,65 +40,58 @@
         />
         <div id="perf-auto-box"></div>
       </div>
-
-      <div class="filter-level">
-        <div class="filter-buttons">
-          <p>Preference:</p>
-          <input
-            type="radio"
-            ,
-            id="male-button"
-            ,
-            name="gender"
-            ,
-            value="male"
-          />
-          <label for="male-button"> Male</label>
-          <input
-            type="radio"
-            ,
-            id="female-button"
-            ,
-            name="gender"
-            ,value="female"
-          />
-          <label for="female-button"> Female</label>
-          <input
-            type="radio"
-            ,
-            id="no-pref-button"
-            ,
-            name="gender"
-            ,
-            value="no preference"
-            checked
-          />
-          <label for="no-pref-button" style="display: inline">
-            No preference</label
-          >
-        </div>
-        <div class="filter-rating">
-          <label for="rating">Min. Rating: </label>
-          <input
-            type="number"
-            step="0.01"
-            id="rating"
-            name="rating"
-            size="4"
-            value="0.0"
-          />
-        </div>
+    </div>
+    <div class="filter-container">
+      <div class="filter-buttons">
+        <p>Preference:</p>
+        <input type="radio" , id="male-button" , name="gender" , value="male" />
+        <label for="male-button"> Male</label>
+        <input
+          type="radio"
+          ,
+          id="female-button"
+          ,
+          name="gender"
+          ,value="female"
+        />
+        <label for="female-button"> Female</label>
+        <input
+          type="radio"
+          ,
+          id="no-pref-button"
+          ,
+          name="gender"
+          ,
+          value="no preference"
+          checked
+        />
+        <label for="no-pref-button" style="display: inline">
+          No preference</label
+        >
+      </div>
+      <div class="filter-rating">
+        <!-- <label for="rating">Min. Rating: </label> -->
+        <p>Min. Rating:</p>
+        <input
+          type="number"
+          step="0.01"
+          id="rating"
+          name="rating"
+          style="width: 50px"
+          value="0.0"
+        />
       </div>
     </div>
-    <div class="like-dislike-list">
-      <h4 class="title">Fragrances you liked:</h4>
+    <div class="like-dislike-container">
+      <h4 class="title" style="margin-left: 20px">Fragrances you liked:</h4>
       <div id="like-list"></div>
-      <h4 class="title">Fragrances you disliked:</h4>
+      <h4 class="title" style="margin-left: 20px">Fragrances you disliked:</h4>
       <div id="dislike-list"></div>
     </div>
     <div id="query-box" class="result-box">
       <div class="result-heading" id="query-heading-text"></div>
     </div>
+    <!-- <div class="loader"></div> -->
     <div id="result-box" class="result-box">
       <div class="result-heading" id="result-heading-text">Search results:</div>
     </div>

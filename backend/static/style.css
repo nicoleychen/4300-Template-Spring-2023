@@ -37,29 +37,6 @@ body {
     color:	#EBC47B;
 }
 
-/* #google-c{
-    color:#EFE4E0;
-}
-#google-s{
-    color:#F0AFAD;
-}
-
-#google-4{
-    color:	#F4B400;
-}
-
-#google-3{
-    color:	#4285F4;
-}
-
-#google-0-1{
-    color:	#0F9D58;
-}
-
-#google-0-2{
-    color:#DB4437;
-} */
-
 .findMyFragrance-title{
     display: flex;
     align-items: center;
@@ -141,15 +118,15 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-.loader {
+/* .loader {
     border-top: 16px solid blue;
     border-right: 16px solid green;
     border-bottom: 16px solid red;
     border-left: 16px solid pink;
-}
+} */
 
 .result-box{
-    width: 700px;
+    width: 55%;
     margin-top:10px; 
     display: flex;
     flex-direction: column;
@@ -202,23 +179,32 @@ body {
     font-family: 'Montserrat', sans-serif;
 }
 
-.filter-level{
-    display:flex;
+.filter-container{
+    display:inline-flex;
+    width: 55%;
 }
 .filter-buttons{
-    position:relative;
-    left: -150px;
-    display: inline-block;
-
+    position: relative;
+    display: inline;
+    float: left;
+    margin: 20px;
+    width:50%;
 }
 
 .filter-rating{
-    position:relative;
-    right: -20px;
-    top: 20px;
+    position: relative;
     font-family: 'Montserrat', sans-serif;
-    display: inline-block;
+    display: inline;
+    float: left;
+    margin: 20px;
+    width:50%;
 }
+
+/* input, label{
+    display: inline-block;
+    vertical-align: middle;
+    margin: 10px 0;
+  } */
 
 .vote-button-group {
     margin: auto;
@@ -240,6 +226,11 @@ body {
     margin-right: auto;
     height: 30px;
     cursor: pointer;
+}
+
+.like-dislike-container {
+    text-align: left;
+    width: 55%;
 }
 
 #like-list, #dislike-list {
