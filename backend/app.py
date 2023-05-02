@@ -13,6 +13,7 @@ from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 from fuzzywuzzy import fuzz
 from dotenv import load_dotenv
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 load_dotenv()
 
@@ -401,6 +402,171 @@ def results(top_5, perf_json):
     return final
 
 
+
+
+#functioons for roccchio 
+def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
+    """Returns a TfidfVectorizer object with the above preprocessing properties.
+        The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
+        of the perfume i for the word j.
+    
+    Note: This function may log a deprecation warning. This is normal, and you
+    can simply ignore it.
+    
+    Parameters
+    ----------
+    max_features : int
+        Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer 
+        constructer.
+    stop_words : str
+        Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer. 
+    max_df : float
+        Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer. 
+    min_df : float
+        Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer. 
+    norm : str
+        Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer. 
+
+    Returns
+    -------
+    TfidfVectorizer
+        A TfidfVectorizer object with the given parameters as its preprocessing properties.
+    """
+    v = TfidfVectorizer(max_features = max_features, stop_words = stop_words, max_df = max_df, min_df = min_df, norm=norm)
+    return v
+
+
+def rocchio(perf, relevant, irrelevant, input_doc_matrix, \
+            perf_name_to_index,a=.3, b=.3, c=.8, clip = True):
+    """Returns a vector representing the modified query vector. 
+    
+    Note: 
+        If the `clip` parameter is set to True, the resulting vector should have 
+        no negatve weights in it!
+        
+        Also, be sure to handle the cases where relevant and irrelevant are empty lists.
+        
+    Params: {query: String (the name of the movie being queried for),
+             relevant: List (the names of relevant movies for query),
+             irrelevant: List (the names of irrelevant movies for query),
+             input_doc_matrix: Numpy Array,
+             movie_name_to_index: Dict,
+             a,b,c: floats (weighting of the original query, relevant queries,
+                             and irrelevant queries, respectively),
+             clip: Boolean (whether or not to clip all returned negative values to 0)}
+    Returns: Numpy Array 
+    """
+    aq0 = a * input_doc_matrix[perf_name_to_index[perf]]
+    
+    rel_len = len(relevant)
+    if rel_len == 0:
+        rel_fraq = 0 
+    else: 
+        rel_fraq = 1/rel_len
+
+    b_rel = np.zeros(len(aq0))
+    for i in relevant: 
+        movie = input_doc_matrix[perf_name_to_index[i]]
+        b_rel = np.add(b_rel, movie)
+        
+    b_rel = b_rel * b* rel_fraq
+    
+    nrel_len = len(irrelevant)
+    if nrel_len ==0: 
+        nrel_fraq = 0
+    else: 
+        nrel_fraq = 1/nrel_len
+    
+    c_nrel = np.zeros(len(aq0))
+    for i in irrelevant: 
+        movie = input_doc_matrix[perf_name_to_index[i]]
+        c_nrel = np.add(c_nrel, movie)
+        
+    c_nrel = c_nrel * c * nrel_fraq 
+    
+    q1= np.zeros(len(aq0))
+    q1 = aq0 + b_rel - c_nrel
+    return np.clip(q1, 0, None)
+        
+    
+def top_10_with_rocchio(relevant_in, irrelevant_in, input_doc_matrix, \
+            perf_name_to_index,perf_index_to_name,input_rocchio):
+    """Returns a list in the following format:
+        
+        [(perf1, score1), (perf2, score2)..., (perf10,score10)],
+        
+    
+     
+    Parameters
+    ----------
+    relevant_in : (query: str, [relevant documents]: str list) list 
+        tuple of the form:
+        tuple[0] = name of perfume being queried (str), 
+        tuple[1] = list of names of the relevant perfumes to the movie being queried (str list).
+    irrelevant_in : (query: str, [irrelevant documents]: str list) list 
+        The same format as relevant_in except tuple[1] contains list of irrelevant movies instead.
+    input_doc_matrix : np.ndarray
+        The term document matrix of the perfume reviews. input_doc_mat[i][j] is the tfidf
+        of the perfume i for the word j.
+    perf_name_to_index : dict
+         A dictionary linking the perf name (Key: str) to the perf index (Value: int). 
+         Ex: {'perf_0': 0, 'perfume_1': 1, .......}
+    perf_index_to_name : dict
+         A dictionary linking the perf index (Key: int) to the perf name (Value: str). 
+         Ex: {0:'perf_0', 1:'perf_1', .......}
+    input_rocchio: function
+        A function implementing the rocchio algorithm.
+        
+    Returns
+    -------
+    dict
+        Returns the top ten highest ranked perfumes and scores for each query in the format described above.
+        
+    """
+    
+        rocchio = input_rocchio(relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
+        
+        sim = []
+        for doc in input_doc_matrix: 
+            dots = np.dot(doc, rocchio)
+            q_norm = np.linalg.norm(doc)
+            d_norm = np.linalg.norm(rocchio)
+            sim.append(dots/(q_norm*d_norm))
+            
+        indexes = np.argsort(sim)[::-1] 
+        indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
+        
+        movies = []
+        for ind in range(10):
+            movies.append((perf_index_to_name[indexes[ind]], sim[indexes[ind]]))
+                    
+        top_10 = movies[:10]
+                
+            
+    return top_10
+            
+        
+    
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#IGNORE THIS 
 #funcctions for cosine sim 
  
 # def build_query_word_counts(input):
