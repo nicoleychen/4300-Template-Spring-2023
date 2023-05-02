@@ -120,15 +120,24 @@ function returnResults() {
   document.getElementById('result-heading-text').textContent =
     'Results similar to "' + query + '":'
 
+  searchParam = new URLSearchParams({
+    name: query,
+    gender_pref: gender_filter,
+    min_rating: min_rating_input,
+  })
+
+  like_list.map(like => searchParam.append('rel_list', like))
+  dislike_list.map(dislike => searchParam.append('irrel_list', dislike))
+
   fetch(
-    '/similar?' +
-      new URLSearchParams({
-        name: query,
-        gender_pref: gender_filter,
-        min_rating: min_rating_input,
-        rel_list: like_list,
-        irrel_list: dislike_list
-      }).toString()
+    '/similar?' + searchParam.toString()
+      // new URLSearchParams({
+      //   name: query,
+      //   gender_pref: gender_filter,
+      //   min_rating: min_rating_input,
+      //   rel_list: like_list,
+      //   irrel_list: dislike_list
+      // }).toString()
   )
     .then(function (response) {
       // The API call was successful!
