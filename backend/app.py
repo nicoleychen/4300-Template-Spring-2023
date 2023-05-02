@@ -72,8 +72,66 @@ def load_perfume_data():
     f.close()
     return data
 
-
 perfume_json = load_perfume_data()
+
+
+#creating tfidf matrix
+def load_sample_data():
+    f = open('example.json')
+    data = json.load(f)
+    print("JSON succesfully loaded!")
+    f.close()
+    return data
+
+def format_json(j):
+    reviews = j["reviews"]
+    perf_list = []
+    for perfume_id in reviews:
+        temp = reviews[perfume_id]
+        review_total = ""
+        for review_id in temp:
+            review_total = review_total + " " + temp[review_id]
+        perf_list.append({"review": review_total})
+            
+        
+    return perf_list
+
+def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
+    """Returns a TfidfVectorizer object with the above preprocessing properties.
+        The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
+        of the perfume i for the word j.
+
+    Note: This function may log a deprecation warning. This is normal, and you
+    can simply ignore it.
+
+    Parameters
+    ----------
+    max_features : int
+        Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer 
+        constructer.
+    stop_words : str
+        Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer. 
+    max_df : float
+        Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer. 
+    min_df : float
+        Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer. 
+    norm : str
+        Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer. 
+
+    Returns
+    -------
+    TfidfVectorizer
+        A TfidfVectorizer object with the given parameters as its preprocessing properties.
+    """
+    v = TfidfVectorizer(max_features=max_features, stop_words=stop_words,
+                        max_df=max_df, min_df=min_df, norm=norm)
+    return v
+
+example_json = load_sample_data()
+formatted_data = format_json(example_json)
+review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
+perfume_by_term = review_vec.fit_transform(d['review'] for d in formatted_data).toarray()
+# index_to_term = {i:v for i, v in enumerate(review_vec.get_feature_names())}
 
 # search autocomplete
 
@@ -139,14 +197,14 @@ def similar_search():
     name = request.args.get("name")
     gender_pref = request.args.get("gender_pref")
     min_rating = request.args.get("min_rating")
-    rel_list = request.args.get("rel_list")
-    irrel_list = request.args.get("irrel_list")
+    rel_list = request.args.getlist("rel_list")
+    irrel_list = request.args.getlist("irrel_list")
 
     print("name: " + name)
     print("gender_pref:" + gender_pref)
     print("min_rating: "+min_rating)
-    print("rel_list: "+rel_list)
-    print("irrel_list: "+irrel_list)
+    print("rel_list: "+ str(rel_list))
+    print("irrel_list: "+ str(irrel_list))
 
     exists = False
     for _, perf_name in perfume_json["name"].items():
@@ -168,19 +226,21 @@ def similar_search():
 
     jaccard = build_perf_sims_jac(num_perfumes, perf_data)
     perfume_ind_to_id = perfume_index_to_id(perf_data)
-    ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
+    jacc_ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
 
     # 4. rocchio filter
-    # tfidf = build_vectorizer(5000, "english")
-    # perf_by_term = tfidf.fit_transform(___ for d in ____).toarray()
-    # index_to_vocab = {i:v for i, v in enumerate(tfidf.get_feature_names())}
+    rel_tuple = (name, rel_list)
+    irrel_tuple = (name, irrel_list)
+    example_data = perfume_json_to_all_notes(example_json, rated_ids)
+    name_to_index = perfume_name_to_index(example_data)
 
-    # rocchio_vector = rocchio(perfume name, relevant, irrelevant, perf_by_term, perf_name_to_index,
-    #                          a=.3, b=.3, c=.8, clip = True)
-
-    # ranked = top_10_with_rocchio(relevant, irrelevant, perf_by_term, perf_name_to_index, perf_index_to_name, rocchio)
-    # results = top_5(ranked, perfume_json)
-    result = results(ranked, perfume_json)
+    if rel_list != []: 
+        result = results(jacc_ranked, perfume_json)
+    else: 
+        cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, perfume_ind_to_id, rocchio)
+        combined_ranked = scores(jacc_ranked, cos_ranked)
+        result = results(combined_ranked, perfume_json)
+    
 
     return json.dumps(result)
 
@@ -403,7 +463,7 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
     # Sort rankings by score
     perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
-    return perf_score_lst[:5]
+    return perf_score_lst
 
 # get the necessary information
 
@@ -433,36 +493,36 @@ def results(top_5, perf_json):
 
 
 # functioons for roccchio
-def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
-    """Returns a TfidfVectorizer object with the above preprocessing properties.
-        The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
-        of the perfume i for the word j.
+# def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
+#     """Returns a TfidfVectorizer object with the above preprocessing properties.
+#         The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
+#         of the perfume i for the word j.
 
-    Note: This function may log a deprecation warning. This is normal, and you
-    can simply ignore it.
+#     Note: This function may log a deprecation warning. This is normal, and you
+#     can simply ignore it.
 
-    Parameters
-    ----------
-    max_features : int
-        Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer 
-        constructer.
-    stop_words : str
-        Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer. 
-    max_df : float
-        Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer. 
-    min_df : float
-        Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer. 
-    norm : str
-        Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer. 
+#     Parameters
+#     ----------
+#     max_features : int
+#         Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer 
+#         constructer.
+#     stop_words : str
+#         Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer. 
+#     max_df : float
+#         Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer. 
+#     min_df : float
+#         Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer. 
+#     norm : str
+#         Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer. 
 
-    Returns
-    -------
-    TfidfVectorizer
-        A TfidfVectorizer object with the given parameters as its preprocessing properties.
-    """
-    v = TfidfVectorizer(max_features=max_features, stop_words=stop_words,
-                        max_df=max_df, min_df=min_df, norm=norm)
-    return v
+#     Returns
+#     -------
+#     TfidfVectorizer
+#         A TfidfVectorizer object with the given parameters as its preprocessing properties.
+#     """
+#     v = TfidfVectorizer(max_features=max_features, stop_words=stop_words,
+#                         max_df=max_df, min_df=min_df, norm=norm)
+#     return v
 
 
 def rocchio(perf, relevant, irrelevant, input_doc_matrix,
@@ -553,21 +613,21 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
 
     """
 
-    rocchio = input_rocchio(
+    update = input_rocchio(
         relevant_in[0], relevant_in[1], irrelevant_in[1], input_doc_matrix, perf_name_to_index)
 
     sim = []
     for doc in input_doc_matrix:
-        dots = np.dot(doc, rocchio)
+        dots = np.dot(doc, update)
         q_norm = np.linalg.norm(doc)
-        d_norm = np.linalg.norm(rocchio)
+        d_norm = np.linalg.norm(update)
         sim.append(dots/(q_norm*d_norm))
 
     indexes = np.argsort(sim)[::-1]
     indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
 
     perfumes = []
-    for ind in range(len(input_doc_matrix)-1):
+    for ind in range(len(perf_name_to_index)-1):
         perfumes.append((perf_index_to_id[indexes[ind]], sim[indexes[ind]]))
 
     return perfumes
