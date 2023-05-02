@@ -223,23 +223,30 @@ def similar_search():
     # 3. jaccard sim filter
     num_perfumes = len(rated_ids)
     perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
+    # jaccard = build_perf_sims_jac(num_perfumes, perf_data)
+    # perfume_ind_to_id = perfume_index_to_id(perf_data)
+    # jacc_ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
 
-    jaccard = build_perf_sims_jac(num_perfumes, perf_data)
-    perfume_ind_to_id = perfume_index_to_id(perf_data)
-    jacc_ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
 
     # 4. rocchio filter
     rel_tuple = (name, rel_list)
     irrel_tuple = (name, irrel_list)
     example_data = perfume_json_to_all_notes(example_json, rated_ids)
     name_to_index = perfume_name_to_index(example_data)
+    index_to_id = perfume_index_to_id(example_data)
+
+    #jaccard on 5 perufmes
+    jaccard = build_perf_sims_jac(5, example_data)
+    jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, example_data)
 
     if rel_list[0] == '' and irrel_list[0] == '': 
-        result = results(jacc_ranked, perfume_json)
+        # result = results(jacc_ranked, perfume_json)
+        result = results(jacc_ranked, example_json)
     else: 
-        cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, perfume_ind_to_id, rocchio)
-        combined_ranked = scores(jacc_ranked, cos_ranked)
-        result = results(combined_ranked, perfume_json)
+        cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
+        combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
+        # result = results(combined_ranked, perfume_json)
+        result = results(combined_ranked, example_json)
 
     return json.dumps(result)
 
@@ -475,7 +482,7 @@ def results(top_5, perf_json):
         Returns: 
     """
     final = []
-    for i in range(5):
+    for i in range(4):
         info = {}
         info["img"] = perf_json["image"][top_5[i][0]]
         info["gender"] = perf_json["for_gender"][top_5[i][0]]
@@ -544,6 +551,12 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix,
              clip: Boolean (whether or not to clip all returned negative values to 0)}
     Returns: Numpy Array 
     """
+
+    if relevant[0] == '': 
+        relevant.remove('')
+    if irrelevant[0] == '':
+        irrelevant.remove('')
+
     aq0 = a * input_doc_matrix[perf_name_to_index[perf]]
 
     rel_len = len(relevant)
@@ -632,7 +645,7 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
     return perfumes
 
 
-def scores(jaccard, cosine):
+def scores(jaccard_in, cosine_in, perf_index_to_id):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
     a list of two-element tuples, where the first element is the
@@ -646,20 +659,23 @@ def scores(jaccard, cosine):
     """
 
     jac = []
-    for tup in jaccard:
-        jac.append(tup[1])
+    for tup in jaccard_in:
+        jac.append(float(tup[1]))
 
     cos = []
-    for tup in cos:
-        jac.append(tup[1])
+    for tup in cosine_in:
+        cos.append(float(tup[1]))
 
-    scores = np.multiply(jaccard, cosine)
+    jac = np.asarray(jac, dtype = 'float64')
+    cos = np.asarray(cos, dtype= 'float64')
+
+    scores = np.multiply(jac, cos)
     indexes = np.argsort(scores)[::-1]
 
     perfumes = []
-    for ind in range(len(jaccard)):
+    for ind in range(len(jaccard_in)):
         perfumes.append(
-            (perfume_index_to_id[indexes[ind]], scores[indexes[ind]]))
+            (perf_index_to_id[indexes[ind]], scores[indexes[ind]]))
 
     return perfumes
 
