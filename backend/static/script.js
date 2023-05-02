@@ -26,8 +26,20 @@ const button = document.getElementById('search-button')
 const perfSearchBox = document.querySelector("#perf-search-box")
 const perfAutoBox = document.querySelector("#perf-auto-box")
 const perfInputBox = document.querySelector("#search-text")
+const loaderContainer = document.querySelector('.loader')
+
+const displayLoading = () => {
+  loaderContainer.style.display = 'block';
+}; 
+
+const hideLoading = () => {
+  loaderContainer.style.display = 'none';
+};
+
 console.log(button)
+
 button.addEventListener('click', returnResults_search)
+
 let votes = new Map();
 let like_list = [];
 let dislike_list = [];
@@ -62,6 +74,9 @@ function returnResults() {
     removeQueryBox[0].parentNode.removeChild(removeQueryBox[0])
   }
 
+  displayLoading();
+  console.log('loading!')
+
   let query = document.getElementById('search-text').value
   let male_pref = document.getElementById('male-button').checked
   let female_pref = document.getElementById('female-button').checked
@@ -94,6 +109,8 @@ function returnResults() {
     return response.json()
   })
   .then(function (data) {
+    hideLoading();
+    console.log('done loading!')
     const res = data
     if (Object.values(res).length === 0) {
       console.log('NOT FOUND IN DATASET')
