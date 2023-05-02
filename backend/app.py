@@ -567,7 +567,7 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
     indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
 
     perfumes = []
-    for ind in range(len(input_doc_matrix)):
+    for ind in range(len(input_doc_matrix)-1):
         perfumes.append((perf_index_to_id[indexes[ind]], sim[indexes[ind]]))
 
     return perfumes
