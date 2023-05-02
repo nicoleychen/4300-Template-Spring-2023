@@ -197,8 +197,8 @@ def similar_search():
     name = request.args.get("name")
     gender_pref = request.args.get("gender_pref")
     min_rating = request.args.get("min_rating")
-    rel_list = request.args.getlist("rel_list")
-    irrel_list = request.args.getlist("irrel_list")
+    rel_list = request.args.getlist("rel_list", type = str)
+    irrel_list = request.args.getlist("irrel_list", type = str)
 
     print("name: " + name)
     print("gender_pref:" + gender_pref)
@@ -239,7 +239,7 @@ def similar_search():
     jaccard = build_perf_sims_jac(5, example_data)
     jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, example_data)
 
-    if rel_list[0] == '' and irrel_list[0] == '': 
+    if len(rel_list) == 0 and len(irrel_list) == 0: 
         # result = results(jacc_ranked, perfume_json)
         result = results(jacc_ranked, example_json)
     else: 
@@ -552,10 +552,10 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix,
     Returns: Numpy Array 
     """
 
-    if relevant[0] == '': 
-        relevant.remove('')
-    if irrelevant[0] == '':
-        irrelevant.remove('')
+    # if relevant[0] == '': 
+    #     relevant.remove('')
+    # if irrelevant[0] == '':
+    #     irrelevant.remove('')
 
     aq0 = a * input_doc_matrix[perf_name_to_index[perf]]
 
