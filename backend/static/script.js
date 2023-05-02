@@ -153,16 +153,6 @@ function resultTemplate(
     }
   }
   return `<div class='result-card'>
-  <div class="vote-button-group">
-  <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
-    <img src="/static/images/${happy_button}" id="like-${name}" alt="Like"/>
-  </button>
-  <button class="vote_button" type="submit" ${dislike_disabled} onclick="updateRelevance(\'${name}\', -1)" id="dislike-button-${name}">
-    <img src="/static/images/${sad_button}" id="dislike-${name}" alt="Dislike"/>
-  </button>
-</div>
-      <div class='result-card box'>
-
         <img src=${img} class='fragrance-img'>
         <h3 class='fragrance-name'>${name} by ${brand}</h3>
         <p class = 'fragrance-detail'> Rating: ${rating}</p> 
@@ -171,12 +161,20 @@ function resultTemplate(
         <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
         <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
         <p class='fragrance-detail'>Description: ${desc}</p>
-      </div>
+
+        <div class="vote-button-group">
+          <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
+            <img src="/static/images/${happy_button}" id="like-${name}" alt="Like"/>
+          </button>
+          <button class="vote_button" type="submit" ${dislike_disabled} onclick="updateRelevance(\'${name}\', -1)" id="dislike-button-${name}">
+            <img src="/static/images/${sad_button}" id="dislike-${name}" alt="Dislike"/>
+          </button>
+        </div>
   </div>`
 }
 
 function noResultTemplate() {
-  return `<div class = 'result-card'> No results found.</div>`
+  return `<div class = 'no-result'> No results found. Try modifying your query.</div>`
 }
 
 function setPerfClickable(list){
