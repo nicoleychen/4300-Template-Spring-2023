@@ -27,11 +27,25 @@ const perfSearchBox = document.querySelector("#perf-search-box")
 const perfAutoBox = document.querySelector("#perf-auto-box")
 const perfInputBox = document.querySelector("#search-text")
 console.log(button)
-button.addEventListener('click', returnResults)
+button.addEventListener('click', returnResults_search)
 let votes = new Map();
+let like_list = [];
+let dislike_list = [];
 
+function returnResults_search(){
+  console.log("returnResults_search is called!")
+  votes = new Map();
+  like_list = [];
+  dislike_list = [];
+  document.getElementById("like-list").innerHTML = '';
+  document.getElementById("dislike-list").innerHTML = '';
+
+  returnResults();
+}
 
 function returnResults() {
+  console.log("returnResults is called!")
+
   // const removeText = document.getElementsByClassName("no-result");
   // removeText[0].parentNode.removeChild(removeText[0]);
 
@@ -39,17 +53,32 @@ function returnResults() {
   while (removeBoxes.length > 0) {
     removeBoxes[0].parentNode.removeChild(removeBoxes[0])
   }
+  const removeText = document.getElementsByClassName('no-result')
+  while (removeText.length > 0) {
+    removeText[0].parentNode.removeChild(removeText[0])
+  }
+  const removeQueryBox = document.getElementsByClassName('query-box')
+  while (removeQueryBox.length > 0) {
+    removeQueryBox[0].parentNode.removeChild(removeQueryBox[0])
+  }
 
   let query = document.getElementById('search-text').value
   let male_pref = document.getElementById('male-button').checked
   let female_pref = document.getElementById('female-button').checked
   let no_pref = document.getElementById('no-pref-button').checked
+  let min_rating_input = document.getElementById('rating').value
+
+  console.log(min_rating_input)
+  console.log(like_list)
+  console.log(dislike_list)
 
   let gender_filter = ''
   if (male_pref) {
     gender_filter = 'for women'
   } else if (female_pref) {
     gender_filter = 'for men'
+  } else if (no_pref) {
+    gender_filter = ''
   } else {
     gender_filter = ''
   }
@@ -66,19 +95,26 @@ function returnResults() {
   })
   .then(function (data) {
     const res = data
-    let tempDiv = document.createElement('div')
-          tempDiv.innerHTML = resultTemplate(
-            res.img,
-            res.name,
-            res.brand,
-            res.rating,
-            res.gender,
-            res.topnote,
-            res.middlenote,
-            res.bottomnote,
-            res.desc
+    if (Object.values(res).length === 0) {
+      console.log('NOT FOUND IN DATASET')
+      let tempDiv = document.createElement('div')
+      tempDiv.innerHTML = noQueryResultTemplate()
+      document.getElementById('query-box').appendChild(tempDiv)
+    } else {
+      let tempDiv = document.createElement('div')
+            tempDiv.innerHTML = resultTemplate(
+              res.img,
+              res.name,
+              res.brand,
+              res.rating,
+              res.gender,
+              res.topnote,
+              res.middlenote,
+              res.bottomnote,
+              res.desc
           )
-    document.getElementById('query-box').appendChild(tempDiv)
+      document.getElementById('query-box').appendChild(tempDiv)
+    }
   })
 
   document.getElementById('result-heading-text').textContent =
@@ -88,7 +124,10 @@ function returnResults() {
     '/similar?' +
       new URLSearchParams({
         name: query,
-        gender_pref: gender_filter
+        gender_pref: gender_filter,
+        min_rating: min_rating_input,
+        rel_list: like_list,
+        irrel_list: dislike_list
       }).toString()
   )
     .then(function (response) {
@@ -152,6 +191,7 @@ function resultTemplate(
       sad_button = "sad_filled.png";
     }
   }
+  // name = JSON.stringify(name).replace(/&/, "&amp;").replace(/'/g, "&quot;")
   return `<div class='result-card'>
         <img src=${img} class='fragrance-img'>
         <h3 class='fragrance-name'>${name} by ${brand}</h3>
@@ -173,8 +213,12 @@ function resultTemplate(
   </div>`
 }
 
+function noQueryResultTemplate() {
+  return `<div class = 'no-result'> There is no perfume by that name in our database. Try double checking your spelling.</div>`
+}
+
 function noResultTemplate() {
-  return `<div class = 'no-result'> No results found. Try modifying your query.</div>`
+  return `<div class = 'no-result'> No similar perfumes found. Try modifying your query.</div>`
 }
 
 function setPerfClickable(list){
@@ -214,15 +258,27 @@ function updateRelevance(name, update) {
 function update_like_dislike_list() {
   like_list_string = "";
   dislike_list_string = "";
+  like_list = []
+  dislike_list = []
   for (let [perf, vote] of votes) {
     if (vote === 1) {
       like_list_string += "<p>" + perf + "</p>";
+      if (!like_list.includes(perf)) {
+        // ✅ only runs if value not in array
+        like_list.push(perf);
+      }
     } else if (vote === -1) {
       dislike_list_string += "<p>" + perf + "</p>";
+      if (!dislike_list.includes(perf)) {
+        // ✅ only runs if value not in array
+        dislike_list.push(perf);
+      }
     }
   }
   document.getElementById("like-list").innerHTML = like_list_string;
   document.getElementById("dislike-list").innerHTML = dislike_list_string;
+
+  returnResults()
 }
 
 
