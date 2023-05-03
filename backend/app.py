@@ -177,11 +177,17 @@ def get_common_keywords(perf1, perf2):
     perfid2 = name_to_index[perf2]
     vector1 = perfume_by_term[perfid1]
     vector2 = perfume_by_term[perfid2]
-    diff = np.subtract(vector1, vector2)
-    diff_sorted = np.argsort(diff)[:5]
+    diff = np.absolute(np.subtract(vector1, vector2))
+    diff_sorted = np.argsort(diff)
+    count = 0
     for word_id in diff_sorted:
+        if count == 10:
+            break
         word = index_to_vocab[word_id]
-        keywords.append(word)
+        if not (word.isnumeric()) and diff[word_id] != 0:
+            print(diff[word_id])
+            keywords.append(word)
+            count += 1
     return keywords
 
 
@@ -518,13 +524,14 @@ def results(ranked_ids, perf_json, query_perf_name, top_k):
         info["desc"] = perf_json["description"][ranked_ids[i][0]]
         keyword_list = get_common_keywords(
             query_perf_name, perf_json["name"][ranked_ids[i][0]])
-        keyword_str = ""
-        for word in keyword_list:
-            if keyword_str == "":
-                keyword_str = keyword_str + word
-            else:
-                keyword_str = keyword_str + ", " + word
-        info["similarkeyword"] = keyword_str
+        info["similarkeyword"] = keyword_list
+        # keyword_str = ""
+        # for word in keyword_list:
+        #     if keyword_str == "":
+        #         keyword_str = keyword_str + word
+        #     else:
+        #         keyword_str = keyword_str + ", " + word
+        # info["similarkeyword"] = keyword_str
         final.append(info)
     return final
 
@@ -694,14 +701,15 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
 
     # score matrix where score_mat[0][i] contains jaccard sim score of perfume with id i
     # and score_mat[1][j] contains cosine sim score of perfume with id j
+    # use 1000 for now to prevent index out of bound error
     score_mat = [[0]*1000]*2
 
-    jac = []
+    # jac = []
     for tup in jaccard_in:
         # jac.append(float(tup[1]))
         score_mat[0][int(tup[0])] = tup[1]
 
-    cos = []
+    # cos = []
     for tup in cosine_in:
         # cos.append(float(tup[1]))
         score_mat[1][int(tup[0])] = tup[1]
@@ -709,10 +717,10 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
     # jac = np.asarray(jac, dtype='float64')
     # cos = np.asarray(cos, dtype='float64')
 
-    print("Jac: ")
-    print(jac)
-    print("Cos: ")
-    print(cos)
+    # print("Jac: ")
+    # print(jac)
+    # print("Cos: ")
+    # print(cos)
 
     scores = np.multiply(score_mat[0],  score_mat[1])
 

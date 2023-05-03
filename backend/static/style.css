@@ -174,7 +174,7 @@ body {
     width: 150px;
     height: auto;
     float: left;
-    padding: 20px 20px 20px 0px;
+    padding: 40px 20px 120px 0px;
 }
 
 .fragrance-name{
@@ -201,20 +201,15 @@ body {
     width:50%;
 }
 
-.filter-rating{
+#rating{
     position: relative;
     font-family: 'Montserrat', sans-serif;
     display: inline;
     float: left;
     margin: 20px;
     width:50%;
+    border-radius: 15px;
 }
-
-/* input, label{
-    display: inline-block;
-    vertical-align: middle;
-    margin: 10px 0;
-  } */
 
 .vote-button-group {
     margin: auto;
@@ -246,4 +241,44 @@ body {
 #like-list, #dislike-list {
     margin-left: 40px;
     font-style: italic;
+}
+.keyword-box {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+.keyword {
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin: 2px;
+    line-height: 12px;
+    color: #fff;
+    background-color:	#E35A60;
+}
+
+.keyword {
+    border-radius: 15px;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    margin: 2px;
+    line-height: 12px;
+    color: #fff;
+    background-color:	#E35A60;
+}
+
+.note {
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    margin: 2px;
+    line-height: 9px;
+    color: #000000;
+    background-color:#F0AFAD;
 }
