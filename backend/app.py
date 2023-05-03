@@ -184,8 +184,7 @@ def get_common_keywords(perf1, perf2):
         if count == 10:
             break
         word = index_to_vocab[word_id]
-        if not (word.isnumeric()) and diff[word_id] != 0:
-            print(diff[word_id])
+        if not (word.isnumeric()) and diff[word_id]!=0:
             keywords.append(word)
             count += 1
     return keywords
@@ -233,7 +232,6 @@ perfume_by_term = review_vec.fit_transform(
     d['review'] for d in formatted_data).toarray()
 index_to_vocab = {i: v for i, v in enumerate(review_vec.get_feature_names())}
 all_ids = list(perfume_json["name"].keys())
-# print(index_to_vocab)
 all_perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
 name_to_index = perfume_name_to_index(all_perf_data)
 index_to_id = perfume_index_to_id(all_perf_data)
