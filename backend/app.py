@@ -691,11 +691,11 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
         [(perf1, score1), (perf2, score2)..., (perf10,score10)]
     """
 
-    print("Jaccard_in: ")
-    print(jaccard_in)
+    # print("Jaccard_in: ")
+    # print(jaccard_in)
 
-    print("Cosine_in: ")
-    print(cosine_in)
+    # print("Cosine_in: ")
+    # print(cosine_in)
 
     # score matrix where score_mat[0][i] contains jaccard sim score of perfume with id i
     # and score_mat[1][j] contains cosine sim score of perfume with id j

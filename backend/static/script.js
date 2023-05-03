@@ -225,7 +225,6 @@ function queryTemplate(
           ${update_notes_list(bottomnote)}
           </div>
          </p>
-        <p class='fragrance-detail'>Description: ${desc}</p>
   </div>`
 }
 
