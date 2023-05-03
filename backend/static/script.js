@@ -74,9 +74,6 @@ function returnResults() {
     removeQueryBox[0].parentNode.removeChild(removeQueryBox[0])
   }
 
-  displayLoading();
-  console.log('loading!')
-
   let query = document.getElementById('search-text').value
   let male_pref = document.getElementById('male-button').checked
   let female_pref = document.getElementById('female-button').checked
@@ -109,8 +106,6 @@ function returnResults() {
     return response.json()
   })
   .then(function (data) {
-    hideLoading();
-    console.log('done loading!')
     const res = data
     if (Object.values(res).length === 0) {
       console.log('NOT FOUND IN DATASET')
@@ -143,6 +138,9 @@ function returnResults() {
     min_rating: min_rating_input,
   })
 
+  displayLoading();
+  console.log('loading!')
+  
   like_list.map(like => searchParam.append('rel_list', like))
   dislike_list.map(dislike => searchParam.append('irrel_list', dislike))
 
@@ -162,6 +160,8 @@ function returnResults() {
     })
     .then(function (data) {
       // This is the JSON from our response
+      hideLoading();
+      console.log('done loading!')
       console.log(data)
       const results = data
       if (Object.values(results).length === 0) {
