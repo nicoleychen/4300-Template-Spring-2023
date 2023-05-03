@@ -178,13 +178,17 @@ def get_common_keywords(perf1, perf2):
     vector1 = perfume_by_term[perfid1]
     vector2 = perfume_by_term[perfid2]
     diff = np.absolute(np.subtract(vector1, vector2))
-    diff_sorted = np.argsort(diff)[:10]
+    diff_sorted = np.argsort(diff)
+    count = 0
     for word_id in diff_sorted:
+        if count==10:
+            break
         word = index_to_vocab[word_id]
-        if word!="00":
+        if not (word.isnumeric()) and diff[word_id]!=0:
+            print(diff[word_id])
             keywords.append(word)
+            count+=1
     return keywords
-
 
 def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
     """Returns a TfidfVectorizer object with the above preprocessing properties.
