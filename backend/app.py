@@ -96,6 +96,91 @@ def format_json(j):
         
     return perf_list
 
+# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes, 
+# returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
+def perfume_json_to_all_notes(perfume_json, ids):
+    top_note_json = perfume_json['top notes']
+    middle_note_json = perfume_json['middle notes']
+    base_note_json = perfume_json['base notes']
+    res = []
+    for id in top_note_json:
+        if id in ids:
+            perf = {}
+            perf['id'] = id
+            perf['name'] = perfume_json["name"][id]
+            perf['notes'] = top_note_json[id] + \
+                middle_note_json[id] + base_note_json[id]
+            res.append(perf)
+    return res
+
+
+def get_perfume_names(perf_json):
+    # gets all perfume names
+    names = set(perf_json['name'].values())
+    return names
+
+
+def perfume_id_to_index(filtered_perf):
+    # Builds dictionary where keys are the perfume id, and values are the index
+    # takes in filtered perfume
+    res = {}
+    for i in range(len(filtered_perf)):
+        perfume = filtered_perf[i]
+        res[perfume['id']] = i
+    return res
+
+
+def perfume_index_to_id(filtered_perf):
+    # Builds dictionary where keys are the perfume id numbers, and values are the index
+    # takes in filtered perfume
+    res = {}
+    temp = perfume_id_to_index(filtered_perf)
+    for k, v in temp.items():
+        res[v] = k
+    return res
+
+
+def perfume_id_to_name(perf_json):
+    # Dictionary {id : name}
+    return perf_json['name']
+
+
+def perfume_name_to_id(perf_json):
+    # Dictionary {name : id}
+    res = {}
+    for k, v in perf_json['name'].items():
+        res[v] = k
+    return res
+
+
+def perfume_name_to_index(filtered_perf):
+    # Dictionary {name : ind}
+    res = {}
+    for i in range(len(filtered_perf)):
+        res[filtered_perf[i]['name']] = i
+    return res
+
+
+def perfume_index_to_name(filtered_perf):
+    # Dictionary {ind : name}
+    res = {}
+    for i in range(len(filtered_perf)):
+        res[i] = filtered_perf[i]['name']
+    return res
+
+def get_common_keywords(perf1, perf2):
+    keywords=[]
+    perfid1 = name_to_index[perf1]
+    perfid2 = name_to_index[perf2]
+    vector1 = perfume_by_term[perfid1]
+    vector2 = perfume_by_term[perfid2]
+    diff = np.subtract(vector1,vector2)
+    diff_sorted = np.argsort(diff)[:5]
+    for word_id in diff_sorted:
+        word = index_to_vocab[word_id]
+        keywords.append(word)
+    return keywords
+
 def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
     """Returns a TfidfVectorizer object with the above preprocessing properties.
         The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
@@ -129,13 +214,20 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
 
 # example_json = load_sample_data()
 formatted_data = format_json(perfume_json)
-review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
+# review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
+# using default values instead
+review_vec = build_vectorizer(5000, "english")
+# create tfidf matrix
 perfume_by_term = review_vec.fit_transform(d['review'] for d in formatted_data).toarray()
-# index_to_term = {i:v for i, v in enumerate(review_vec.get_feature_names())}
+print(perfume_by_term.shape)
+index_to_vocab = {i:v for i, v in enumerate(review_vec.get_feature_names())}
+all_ids = list(perfume_json["name"].keys())
+# print(index_to_vocab)
+perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
+name_to_index = perfume_name_to_index(perf_data)
+index_to_id = perfume_index_to_id(perf_data)
 
 # search autocomplete
-
-
 @app.route("/suggestion/perf")
 def suggest_perf():
     text = request.args.get("name")
@@ -215,7 +307,6 @@ def similar_search():
     # check if name is in perfume json, if not return "sorry pick another name"
     # Rest of algorithm goes here
     # 1. gender filter
-    all_ids = list(perfume_json["name"].keys())
     gendered_ids = gender_filter(perfume_json, all_ids, gender_pref)
     # 2. rating threshold filter
     rated_ids = rating_threshold_filter(perfume_json, gendered_ids, min_rating)
@@ -231,21 +322,18 @@ def similar_search():
     # 4. rocchio filter
     rel_tuple = (name, rel_list)
     irrel_tuple = (name, irrel_list)
-    perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
-    name_to_index = perfume_name_to_index(perf_data)
-    index_to_id = perfume_index_to_id(perf_data)
 
     #jaccard on 5 perufmes
     jaccard = build_perf_sims_jac(num_perfumes, perf_data)
     jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, perf_data)
 
-    if len(rel_list) == 0 and len(irrel_list) == 0: 
+    # if len(rel_list) == 0 and len(irrel_list) == 0: 
         # result = results(jacc_ranked, perfume_json)
-        result = initial_search(jacc_ranked, perfume_json)
-    else: 
-        cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
-        combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
-        result = results(combined_ranked, perfume_json)
+        # result = initial_search(jacc_ranked, perfume_json)
+    # else: 
+    cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
+    combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
+    result = results(combined_ranked, perfume_json, name)
 
     return json.dumps(result)
 
@@ -310,79 +398,7 @@ def rating_threshold_filter(perfume_data, perfume_ids, threshold):
             res.append(id)
     return res
 
-# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes, returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
 # THIS IS THE FILTERED PERFUME DATA TO USE
-
-
-def perfume_json_to_all_notes(perfume_json, ids):
-    top_note_json = perfume_json['top notes']
-    middle_note_json = perfume_json['middle notes']
-    base_note_json = perfume_json['base notes']
-    res = []
-    for id in top_note_json:
-        if id in ids:
-            perf = {}
-            perf['id'] = id
-            perf['name'] = perfume_json["name"][id]
-            perf['notes'] = top_note_json[id] + \
-                middle_note_json[id] + base_note_json[id]
-            res.append(perf)
-    return res
-
-
-def get_perfume_names(perf_json):
-    # gets all perfume names
-    names = set(perf_json['name'].values())
-    return names
-
-
-def perfume_id_to_index(filtered_perf):
-    # Builds dictionary where keys are the perfume id, and values are the index
-    # takes in filtered perfume
-    res = {}
-    for i in range(len(filtered_perf)):
-        perfume = filtered_perf[i]
-        res[perfume['id']] = i
-    return res
-
-
-def perfume_index_to_id(filtered_perf):
-    # Builds dictionary where keys are the perfume id numbers, and values are the index
-    # takes in filtered perfume
-    res = {}
-    temp = perfume_id_to_index(filtered_perf)
-    for k, v in temp.items():
-        res[v] = k
-    return res
-
-
-def perfume_id_to_name(perf_json):
-    # Dictionary {id : name}
-    return perf_json['name']
-
-
-def perfume_name_to_id(perf_json):
-    # Dictionary {name : id}
-    res = {}
-    for k, v in perf_json['name'].items():
-        res[v] = k
-    return res
-
-
-def perfume_name_to_index(filtered_perf):
-    # Dictionary {name : ind}
-    res = {}
-    for i in range(len(filtered_perf)):
-        res[filtered_perf[i]['name']] = i
-    return res
-
-
-def perfume_index_to_name(filtered_perf):
-    # Dictionary {ind : name}
-    res = {}
-    for i in range(len(filtered_perf)):
-        res[i] = filtered_perf[i]['name']
-    return res
 
 # get query perfume
 
@@ -395,30 +411,7 @@ def check_query(input_query, perf_json):
     return "Sorry, no results found. Check your spelling or try a different perfume."
 
 
-def build_inverted_index(filtered_perf):
-    """ Builds an inverted index from the perfume name and notes.
-    Arguments
-    =========
-    database: list of dicts.
-        Each perfume in this list already has a 'notes'
-        field that contains the tokenized notes.
-    Returns
-    =======
-    inverted_index: dict
-        For each note, the index contains
-        a list of that stores all the perfume_id with that note.
-        inverted_index[note] = [p1, p2, p3]
-    """
-    res = {}
-    for i in range(len(filtered_perf)):
-        id = database[i]
-        notes = database['notes']
-        notes_set = set(notes)
-        for note in notes_set:
-            if note not in res:
-                res[note] = []
-            res[note].append(i)
-    return res
+
 
 
 def build_perf_sims_jac(n_perf, input_data):
@@ -483,7 +476,7 @@ def initial_search(top_5, perf_json):
 
     top_5 = sorted(top_5, key=lambda x: -x[1])
     final = []
-    for i in range(4):
+    for i in range(5):
         info = {}
         info["img"] = perf_json["image"][top_5[i][0]]
         info["gender"] = perf_json["for_gender"][top_5[i][0]]
@@ -498,7 +491,7 @@ def initial_search(top_5, perf_json):
         final.append(info)
     return final
 
-def results(top_5, perf_json):
+def results(top_5, perf_json, query_perf_name):
     """
         Take in list of top 5 perfumes ids and get the corresponding info
         input_dict: list of dictionaries for each perfume - perf_dict
@@ -506,7 +499,7 @@ def results(top_5, perf_json):
         Returns: 
     """
     final = []
-    for i in range(4):
+    for i in range(5):
         info = {}
         info["img"] = perf_json["image"][top_5[i][0]]
         info["gender"] = perf_json["for_gender"][top_5[i][0]]
@@ -518,6 +511,14 @@ def results(top_5, perf_json):
         info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
         info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
         info["desc"] = perf_json["description"][top_5[i][0]]
+        keyword_list = get_common_keywords(query_perf_name, perf_json["name"][top_5[i][0]])
+        keyword_str = ""
+        for word in keyword_list:
+            if keyword_str == "":
+                keyword_str = keyword_str + word
+            else: 
+                keyword_str = keyword_str + ", " + word
+        info["similarkeyword"] = keyword_str
         final.append(info)
     return final
 
@@ -699,7 +700,37 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
 
     return perfumes
 
+
+
+
     # IGNORE THIS
+
+# def build_inverted_index(filtered_perf):
+#     """ Builds an inverted index from the perfume name and notes.
+#     Arguments
+#     =========
+#     database: list of dicts.
+#         Each perfume in this list already has a 'notes'
+#         field that contains the tokenized notes.
+#     Returns
+#     =======
+#     inverted_index: dict
+#         For each note, the index contains
+#         a list of that stores all the perfume_id with that note.
+#         inverted_index[note] = [p1, p2, p3]
+#     """
+#     res = {}
+#     for i in range(len(filtered_perf)):
+#         id = database[i]
+#         notes = database['notes']
+#         notes_set = set(notes)
+#         for note in notes_set:
+#             if note not in res:
+#                 res[note] = []
+#             res[note].append(i)
+#     return res
+
+
     # funcctions for cosine sim
 
     # def build_query_word_counts(input):

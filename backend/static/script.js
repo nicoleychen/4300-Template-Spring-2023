@@ -181,7 +181,8 @@ function returnResults() {
             res.topnote,
             res.middlenote,
             res.bottomnote,
-            res.desc
+            res.desc,
+            res.similarkeyword
           )
           document.getElementById('result-box').appendChild(tempDiv)
         })
@@ -202,7 +203,8 @@ function resultTemplate(
   topnote,
   middlenote,
   bottomnote,
-  desc
+  desc,
+  similarkeyword
 ) {
   like_disabled = "";
   dislike_disabled = "";
@@ -227,6 +229,7 @@ function resultTemplate(
         <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
         <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
         <p class='fragrance-detail'>Description: ${desc}</p>
+        <p class='fragrance-detail'> These are similar keywords between your query and this result: ${similarkeyword}</p>
 
         <div class="vote-button-group">
           <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
