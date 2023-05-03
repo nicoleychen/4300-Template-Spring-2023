@@ -66,7 +66,7 @@ def episodes_search():
 
 # JJ: function that opens json file
 def load_perfume_data():
-    f = open('perfume_combined_0_150.json')
+    f = open('perfumes_combined_0_299.json')
     data = json.load(f)
     print("JSON succesfully loaded!")
     f.close()
@@ -219,13 +219,12 @@ formatted_data = format_json(perfume_json)
 review_vec = build_vectorizer(5000, "english")
 # create tfidf matrix
 perfume_by_term = review_vec.fit_transform(d['review'] for d in formatted_data).toarray()
-print(perfume_by_term.shape)
 index_to_vocab = {i:v for i, v in enumerate(review_vec.get_feature_names())}
 all_ids = list(perfume_json["name"].keys())
 # print(index_to_vocab)
-perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
-name_to_index = perfume_name_to_index(perf_data)
-index_to_id = perfume_index_to_id(perf_data)
+all_perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
+name_to_index = perfume_name_to_index(all_perf_data)
+index_to_id = perfume_index_to_id(all_perf_data)
 
 # search autocomplete
 @app.route("/suggestion/perf")
@@ -452,7 +451,7 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     Returns: List<Tuple> (id, score)
     """
     # Get movie index from movie name
-    perf_idx = perfume_name_to_index(filtered_perf)[perfume]
+    perf_idx = perfume_name_to_index(all_perf_data)[perfume]
     # Get list of similarity scores for movie
     score_lst = matrix[perf_idx]
     perf_score_lst = [(perf_index_to_id[i], s)
