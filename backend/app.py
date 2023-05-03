@@ -66,7 +66,7 @@ def episodes_search():
 
 # JJ: function that opens json file
 def load_perfume_data():
-    f = open('perfume_data_combined.json')
+    f = open('perfume_combined_0_150.json')
     data = json.load(f)
     print("JSON succesfully loaded!")
     f.close()
@@ -76,12 +76,12 @@ perfume_json = load_perfume_data()
 
 
 #creating tfidf matrix
-def load_sample_data():
-    f = open('example.json')
-    data = json.load(f)
-    print("JSON succesfully loaded!")
-    f.close()
-    return data
+# def load_sample_data():
+#     f = open('perfume_combined_0_150.json')
+#     data = json.load(f)
+#     print("JSON succesfully loaded!")
+#     f.close()
+#     return data
 
 def format_json(j):
     reviews = j["reviews"]
@@ -127,8 +127,8 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
                         max_df=max_df, min_df=min_df, norm=norm)
     return v
 
-example_json = load_sample_data()
-formatted_data = format_json(example_json)
+# example_json = load_sample_data()
+formatted_data = format_json(perfume_json)
 review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
 perfume_by_term = review_vec.fit_transform(d['review'] for d in formatted_data).toarray()
 # index_to_term = {i:v for i, v in enumerate(review_vec.get_feature_names())}
@@ -231,22 +231,21 @@ def similar_search():
     # 4. rocchio filter
     rel_tuple = (name, rel_list)
     irrel_tuple = (name, irrel_list)
-    example_data = perfume_json_to_all_notes(example_json, rated_ids)
-    name_to_index = perfume_name_to_index(example_data)
-    index_to_id = perfume_index_to_id(example_data)
+    perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
+    name_to_index = perfume_name_to_index(perf_data)
+    index_to_id = perfume_index_to_id(perf_data)
 
     #jaccard on 5 perufmes
-    jaccard = build_perf_sims_jac(5, example_data)
-    jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, example_data)
+    jaccard = build_perf_sims_jac(num_perfumes, perf_data)
+    jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, perf_data)
 
     if len(rel_list) == 0 and len(irrel_list) == 0: 
         # result = results(jacc_ranked, perfume_json)
-        result = results(jacc_ranked, example_json)
+        result = initial_search(jacc_ranked, perfume_json)
     else: 
         cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
         combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
-        # result = results(combined_ranked, perfume_json)
-        result = results(combined_ranked, example_json)
+        result = results(combined_ranked, perfume_json)
 
     return json.dumps(result)
 
@@ -468,11 +467,36 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     # Do not account for movie itself in ranking
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
     # Sort rankings by score
-    perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
+    # perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
     return perf_score_lst
 
 # get the necessary information
 
+
+def initial_search(top_5, perf_json):
+    """
+        Take in list of top 5 perfumes ids and get the corresponding info
+        input_dict: list of dictionaries for each perfume - perf_dict
+
+        Returns: 
+    """
+
+    top_5 = sorted(top_5, key=lambda x: -x[1])
+    final = []
+    for i in range(4):
+        info = {}
+        info["img"] = perf_json["image"][top_5[i][0]]
+        info["gender"] = perf_json["for_gender"][top_5[i][0]]
+        info["name"] = perf_json["name"][top_5[i][0]]
+        info["brand"] = perf_json["company"][top_5[i][0]]
+        info["rating"] = perf_json["rating"][top_5[i][0]]
+        info["gender"] = perf_json["for_gender"][top_5[i][0]]
+        info["topnote"] = perf_json["top notes"][top_5[i][0]]
+        info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
+        info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
+        info["desc"] = perf_json["description"][top_5[i][0]]
+        final.append(info)
+    return final
 
 def results(top_5, perf_json):
     """
@@ -496,7 +520,6 @@ def results(top_5, perf_json):
         info["desc"] = perf_json["description"][top_5[i][0]]
         final.append(info)
     return final
-
 
 # functioons for roccchio
 # def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
@@ -551,12 +574,6 @@ def rocchio(perf, relevant, irrelevant, input_doc_matrix,
              clip: Boolean (whether or not to clip all returned negative values to 0)}
     Returns: Numpy Array 
     """
-
-    # if relevant[0] == '': 
-    #     relevant.remove('')
-    # if irrelevant[0] == '':
-    #     irrelevant.remove('')
-
     aq0 = a * input_doc_matrix[perf_name_to_index[perf]]
 
     rel_len = len(relevant)
@@ -637,12 +654,13 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
         norm_prod = q_norm*d_norm if q_norm*d_norm !=0 else .0001
         sim.append(dots/(norm_prod))
 
-    indexes = np.argsort(sim)[::-1]
-    indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
+    # indexes = np.argsort(sim)[::-1]
+    # indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
+    sim = sim[:perf_name_to_index[relevant_in[0]]] + sim[perf_name_to_index[relevant_in[0]]+1:]
 
     perfumes = []
     for ind in range(len(perf_name_to_index)-1):
-        perfumes.append((perf_index_to_id[indexes[ind]], sim[indexes[ind]]))
+        perfumes.append((perf_index_to_id[ind], sim[ind]))
 
     return perfumes
 
