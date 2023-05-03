@@ -177,11 +177,12 @@ def get_common_keywords(perf1, perf2):
     perfid2 = name_to_index[perf2]
     vector1 = perfume_by_term[perfid1]
     vector2 = perfume_by_term[perfid2]
-    diff = np.subtract(vector1, vector2)
-    diff_sorted = np.argsort(diff)[:5]
+    diff = np.absolute(np.subtract(vector1, vector2))
+    diff_sorted = np.argsort(diff)[:10]
     for word_id in diff_sorted:
         word = index_to_vocab[word_id]
-        keywords.append(word)
+        if word!="00":
+            keywords.append(word)
     return keywords
 
 
@@ -518,13 +519,14 @@ def results(top_5, perf_json, query_perf_name):
         info["desc"] = perf_json["description"][top_5[i][0]]
         keyword_list = get_common_keywords(
             query_perf_name, perf_json["name"][top_5[i][0]])
-        keyword_str = ""
-        for word in keyword_list:
-            if keyword_str == "":
-                keyword_str = keyword_str + word
-            else:
-                keyword_str = keyword_str + ", " + word
-        info["similarkeyword"] = keyword_str
+        info["similarkeyword"] = keyword_list
+        # keyword_str = ""
+        # for word in keyword_list:
+        #     if keyword_str == "":
+        #         keyword_str = keyword_str + word
+        #     else:
+        #         keyword_str = keyword_str + ", " + word
+        # info["similarkeyword"] = keyword_str
         final.append(info)
     return final
 
@@ -687,10 +689,10 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
     """
 
     print("Jaccard_in: ")
-    print(jaccard_in)
+    # print(jaccard_in)
 
     print("Cosine_in: ")
-    print(cosine_in)
+    # print(cosine_in)
 
     jac = []
     for tup in jaccard_in:
@@ -703,10 +705,10 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
     jac = np.asarray(jac, dtype='float64')
     cos = np.asarray(cos, dtype='float64')
 
-    print("Jac: ")
-    print(jac)
-    print("Cos: ")
-    print(cos)
+    # print("Jac: ")
+    # print(jac)
+    # print("Cos: ")
+    # print(cos)
 
     scores = np.multiply(jac, cos)
     indexes = np.argsort(scores)[::-1]

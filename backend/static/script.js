@@ -114,7 +114,7 @@ function returnResults() {
       document.getElementById('query-box').appendChild(tempDiv)
     } else {
       let tempDiv = document.createElement('div')
-            tempDiv.innerHTML = resultTemplate(
+            tempDiv.innerHTML = queryTemplate(
               res.img,
               res.name,
               res.brand,
@@ -194,6 +194,41 @@ function returnResults() {
     })
 }
 
+function queryTemplate(
+  img,
+  name,
+  brand,
+  rating,
+  gender,
+  topnote,
+  middlenote,
+  bottomnote,
+  desc,
+) {
+  return `<div class='result-card'>
+        <img src=${img} class='fragrance-img'>
+        <h3 class='fragrance-name'>${name} by ${brand}</h3>
+        <p class = 'fragrance-detail'> Rating: ${rating}</p> 
+        <p class = 'fragrance-detail'> Gender: ${gender}</p> 
+        <p class = 'fragrance-detail'> Top notes: 
+          <div class='keyword-box'>
+          ${update_notes_list(topnote)}
+          </div>
+        </p>
+        <p class = 'fragrance-detail'> Middle notes:  
+          <div class='keyword-box'>
+          ${update_notes_list(middlenote)}
+          </div>
+        </p>
+        <p class = 'fragrance-detail'> Base notes: </p>
+          <div class='keyword-box'>
+          ${update_notes_list(bottomnote)}
+          </div>
+         </p>
+        <p class='fragrance-detail'>Description: ${desc}</p>
+  </div>`
+}
+
 function resultTemplate(
   img,
   name,
@@ -225,12 +260,35 @@ function resultTemplate(
         <h3 class='fragrance-name'>${name} by ${brand}</h3>
         <p class = 'fragrance-detail'> Rating: ${rating}</p> 
         <p class = 'fragrance-detail'> Gender: ${gender}</p> 
-        <p class = 'fragrance-detail'> Top notes: ${topnote} </p>
-        <p class = 'fragrance-detail'> Middle notes: ${middlenote} </p>
-        <p class = 'fragrance-detail'> Base notes: ${bottomnote}</p>
+        <p class = 'fragrance-detail'> Top notes: 
+          <div class='keyword-box'>
+          ${update_notes_list(topnote)}
+          </div>
+        </p>
+        <p class = 'fragrance-detail'> Middle notes:  
+          <div class='keyword-box'>
+          ${update_notes_list(middlenote)}
+          </div>
+        </p>
+        <p class = 'fragrance-detail'> Base notes: </p>
+          <div class='keyword-box'>
+          ${update_notes_list(bottomnote)}
+          </div>
+         </p>
         <p class='fragrance-detail'>Description: ${desc}</p>
-        <p class='fragrance-detail'> These are similar keywords between your query and this result: ${similarkeyword}</p>
-
+        <p class='fragrance-detail'> Here are similar keywords from reviews of your query and this result: </p>
+        <div class='keyword-box'> 
+          <div class="keyword">${similarkeyword[0]}</div>
+          <div class="keyword">${similarkeyword[1]}</div>
+          <div class="keyword">${similarkeyword[2]}</div>
+          <div class="keyword">${similarkeyword[3]}</div>
+          <div class="keyword">${similarkeyword[4]}</div>
+          <div class="keyword">${similarkeyword[5]}</div>
+          <div class="keyword">${similarkeyword[6]}</div>
+          <div class="keyword">${similarkeyword[7]}</div>
+          <div class="keyword">${similarkeyword[8]}</div>
+          <div class="keyword">${similarkeyword[9]}</div>
+        </div>
         <div class="vote-button-group">
           <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
             <img src="/static/images/${happy_button}" id="like-${name}" alt="Like"/>
@@ -260,6 +318,17 @@ function selectPerf(element){
   let selectUserData = element.textContent;
   perfInputBox.value=selectUserData;
   perfSearchBox.classList.remove("active")
+}
+
+
+function update_notes_list(note){
+  html = ""
+  for(let n of note){
+    if (n!=''){
+      html+=`<div class="note"> ${n} </div>`
+    }
+  }
+  return html
 }
 
 function updateRelevance(name, update) {
