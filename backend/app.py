@@ -339,8 +339,9 @@ def similar_search():
     # else:
     cos_ranked = with_rocchio(
         rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
-    combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
-    result = results(combined_ranked, perfume_json, name)
+    combined_ranked = scores(jacc_ranked, cos_ranked,
+                             index_to_id, 1000)
+    result = results(combined_ranked, perfume_json, name, 5)
 
     return json.dumps(result)
 
@@ -470,54 +471,53 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
 # get the necessary information
 
 
-def initial_search(top_5, perf_json):
-    """
-        Take in list of top 5 perfumes ids and get the corresponding info
-        input_dict: list of dictionaries for each perfume - perf_dict
+# def initial_search(top_5, perf_json):
+#     """
+#         Take in list of top 5 perfumes ids and get the corresponding info
+#         input_dict: list of dictionaries for each perfume - perf_dict
 
-        Returns: 
-    """
+#         Returns:
+#     """
 
-    top_5 = sorted(top_5, key=lambda x: -x[1])
+#     top_5 = sorted(top_5, key=lambda x: -x[1])
+#     final = []
+#     for i in range(5):
+#         info = {}
+#         info["img"] = perf_json["image"][top_5[i][0]]
+#         info["gender"] = perf_json["for_gender"][top_5[i][0]]
+#         info["name"] = perf_json["name"][top_5[i][0]]
+#         info["brand"] = perf_json["company"][top_5[i][0]]
+#         info["rating"] = perf_json["rating"][top_5[i][0]]
+#         info["gender"] = perf_json["for_gender"][top_5[i][0]]
+#         info["topnote"] = perf_json["top notes"][top_5[i][0]]
+#         info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
+#         info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
+#         info["desc"] = perf_json["description"][top_5[i][0]]
+#         final.append(info)
+#     return final
+
+
+def results(ranked_ids, perf_json, query_perf_name, top_k):
+    """
+        Take in list of ranked perfumes ids and get the corresponding info
+
+        Returns: information for top_k perfumes
+    """
     final = []
-    for i in range(5):
+    for i in range(top_k):
         info = {}
-        info["img"] = perf_json["image"][top_5[i][0]]
-        info["gender"] = perf_json["for_gender"][top_5[i][0]]
-        info["name"] = perf_json["name"][top_5[i][0]]
-        info["brand"] = perf_json["company"][top_5[i][0]]
-        info["rating"] = perf_json["rating"][top_5[i][0]]
-        info["gender"] = perf_json["for_gender"][top_5[i][0]]
-        info["topnote"] = perf_json["top notes"][top_5[i][0]]
-        info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
-        info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
-        info["desc"] = perf_json["description"][top_5[i][0]]
-        final.append(info)
-    return final
-
-
-def results(top_5, perf_json, query_perf_name):
-    """
-        Take in list of top 5 perfumes ids and get the corresponding info
-        input_dict: list of dictionaries for each perfume - perf_dict
-
-        Returns: 
-    """
-    final = []
-    for i in range(5):
-        info = {}
-        info["img"] = perf_json["image"][top_5[i][0]]
-        info["gender"] = perf_json["for_gender"][top_5[i][0]]
-        info["name"] = perf_json["name"][top_5[i][0]]
-        info["brand"] = perf_json["company"][top_5[i][0]]
-        info["rating"] = perf_json["rating"][top_5[i][0]]
-        info["gender"] = perf_json["for_gender"][top_5[i][0]]
-        info["topnote"] = perf_json["top notes"][top_5[i][0]]
-        info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
-        info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
-        info["desc"] = perf_json["description"][top_5[i][0]]
+        info["img"] = perf_json["image"][ranked_ids[i][0]]
+        info["gender"] = perf_json["for_gender"][ranked_ids[i][0]]
+        info["name"] = perf_json["name"][ranked_ids[i][0]]
+        info["brand"] = perf_json["company"][ranked_ids[i][0]]
+        info["rating"] = perf_json["rating"][ranked_ids[i][0]]
+        info["gender"] = perf_json["for_gender"][ranked_ids[i][0]]
+        info["topnote"] = perf_json["top notes"][ranked_ids[i][0]]
+        info["middlenote"] = perf_json["middle notes"][ranked_ids[i][0]]
+        info["bottomnote"] = perf_json["base notes"][ranked_ids[i][0]]
+        info["desc"] = perf_json["description"][ranked_ids[i][0]]
         keyword_list = get_common_keywords(
-            query_perf_name, perf_json["name"][top_5[i][0]])
+            query_perf_name, perf_json["name"][ranked_ids[i][0]])
         keyword_str = ""
         for word in keyword_list:
             if keyword_str == "":
@@ -673,7 +673,7 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
     return perfumes
 
 
-def scores(jaccard_in, cosine_in, perf_index_to_id):
+def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
     a list of two-element tuples, where the first element is the
@@ -692,31 +692,45 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
     print("Cosine_in: ")
     print(cosine_in)
 
+    # score matrix where score_mat[0][i] contains jaccard sim score of perfume with id i
+    # and score_mat[1][j] contains cosine sim score of perfume with id j
+    score_mat = [[0]*1000]*2
+
     jac = []
     for tup in jaccard_in:
-        jac.append(float(tup[1]))
+        # jac.append(float(tup[1]))
+        score_mat[0][int(tup[0])] = tup[1]
 
     cos = []
     for tup in cosine_in:
-        cos.append(float(tup[1]))
+        # cos.append(float(tup[1]))
+        score_mat[1][int(tup[0])] = tup[1]
 
-    jac = np.asarray(jac, dtype='float64')
-    cos = np.asarray(cos, dtype='float64')
+    # jac = np.asarray(jac, dtype='float64')
+    # cos = np.asarray(cos, dtype='float64')
 
     print("Jac: ")
     print(jac)
     print("Cos: ")
     print(cos)
 
-    scores = np.multiply(jac, cos)
-    indexes = np.argsort(scores)[::-1]
+    scores = np.multiply(score_mat[0],  score_mat[1])
 
     perfumes = []
-    for ind in range(len(jaccard_in)):
-        perfumes.append(
-            (perf_index_to_id[indexes[ind]], scores[indexes[ind]]))
+    for id, score in enumerate(scores):
+        perfumes.append((str(id), score))
 
-    return perfumes
+    perfumes_sorted = sorted(perfumes, key=lambda x: -x[1])
+
+    # scores = np.multiply(jac, cos)
+    # indexes = np.argsort(scores)[::-1]
+
+    # perfumes = []
+    # for ind in range(len(jaccard_in)):
+    #     perfumes.append(
+    #         (perf_index_to_id[indexes[ind]], scores[indexes[ind]]))
+
+    return perfumes_sorted
 
     # IGNORE THIS
 
