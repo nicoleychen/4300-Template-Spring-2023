@@ -14,6 +14,7 @@ from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
 from fuzzywuzzy import fuzz
 from dotenv import load_dotenv
 from sklearn.feature_extraction.text import TfidfVectorizer
+import requests
 
 load_dotenv()
 
@@ -226,7 +227,9 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
 formatted_data = format_json(perfume_json)
 # review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
 # using default values instead
-review_vec = build_vectorizer(5000, "english")
+stopwords_list = requests.get("https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt").content
+stopwords = set(stopwords_list.decode().splitlines()) 
+review_vec = build_vectorizer(5000, stopwords)
 # create tfidf matrix
 perfume_by_term = review_vec.fit_transform(
     d['review'] for d in formatted_data).toarray()
@@ -445,6 +448,8 @@ def build_perf_sims_jac(n_perf, input_data):
                     perf_sims[i][j] = 0
                 else:
                     perf_sims[i][j] = intersect/union
+    print("jac shape: ")
+    print(perf_sims.shape)
     return perf_sims
 
 # rank all perfumes, and return top 3
