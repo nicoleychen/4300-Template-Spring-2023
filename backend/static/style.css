@@ -137,6 +137,7 @@ body {
 .result-box{
     width: 55%;
     margin-top:10px; 
+    margin-bottom: 25px;
     display: flex;
     flex-direction: column;
 }

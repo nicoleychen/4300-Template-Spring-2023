@@ -72,10 +72,11 @@ def load_perfume_data():
     f.close()
     return data
 
+
 perfume_json = load_perfume_data()
 
 
-#creating tfidf matrix
+# creating tfidf matrix
 # def load_sample_data():
 #     f = open('perfume_combined_0_150.json')
 #     data = json.load(f)
@@ -92,12 +93,13 @@ def format_json(j):
         for review_id in temp:
             review_total = review_total + " " + temp[review_id]
         perf_list.append({"review": review_total})
-            
-        
+
     return perf_list
 
-# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes, 
+# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes,
 # returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
+
+
 def perfume_json_to_all_notes(perfume_json, ids):
     top_note_json = perfume_json['top notes']
     middle_note_json = perfume_json['middle notes']
@@ -168,18 +170,20 @@ def perfume_index_to_name(filtered_perf):
         res[i] = filtered_perf[i]['name']
     return res
 
+
 def get_common_keywords(perf1, perf2):
-    keywords=[]
+    keywords = []
     perfid1 = name_to_index[perf1]
     perfid2 = name_to_index[perf2]
     vector1 = perfume_by_term[perfid1]
     vector2 = perfume_by_term[perfid2]
-    diff = np.subtract(vector1,vector2)
+    diff = np.subtract(vector1, vector2)
     diff_sorted = np.argsort(diff)[:5]
     for word_id in diff_sorted:
         word = index_to_vocab[word_id]
         keywords.append(word)
     return keywords
+
 
 def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
     """Returns a TfidfVectorizer object with the above preprocessing properties.
@@ -212,14 +216,16 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
                         max_df=max_df, min_df=min_df, norm=norm)
     return v
 
+
 # example_json = load_sample_data()
 formatted_data = format_json(perfume_json)
 # review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
 # using default values instead
 review_vec = build_vectorizer(5000, "english")
 # create tfidf matrix
-perfume_by_term = review_vec.fit_transform(d['review'] for d in formatted_data).toarray()
-index_to_vocab = {i:v for i, v in enumerate(review_vec.get_feature_names())}
+perfume_by_term = review_vec.fit_transform(
+    d['review'] for d in formatted_data).toarray()
+index_to_vocab = {i: v for i, v in enumerate(review_vec.get_feature_names())}
 all_ids = list(perfume_json["name"].keys())
 # print(index_to_vocab)
 all_perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
@@ -227,6 +233,8 @@ name_to_index = perfume_name_to_index(all_perf_data)
 index_to_id = perfume_index_to_id(all_perf_data)
 
 # search autocomplete
+
+
 @app.route("/suggestion/perf")
 def suggest_perf():
     text = request.args.get("name")
@@ -288,14 +296,14 @@ def similar_search():
     name = request.args.get("name")
     gender_pref = request.args.get("gender_pref")
     min_rating = request.args.get("min_rating")
-    rel_list = request.args.getlist("rel_list", type = str)
-    irrel_list = request.args.getlist("irrel_list", type = str)
+    rel_list = request.args.getlist("rel_list", type=str)
+    irrel_list = request.args.getlist("irrel_list", type=str)
 
     print("name: " + name)
     print("gender_pref:" + gender_pref)
     print("min_rating: "+min_rating)
-    print("rel_list: "+ str(rel_list))
-    print("irrel_list: "+ str(irrel_list))
+    print("rel_list: " + str(rel_list))
+    print("irrel_list: " + str(irrel_list))
 
     exists = False
     for _, perf_name in perfume_json["name"].items():
@@ -317,20 +325,20 @@ def similar_search():
     # perfume_ind_to_id = perfume_index_to_id(perf_data)
     # jacc_ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
 
-
     # 4. rocchio filter
     rel_tuple = (name, rel_list)
     irrel_tuple = (name, irrel_list)
 
-    #jaccard on 5 perufmes
+    # jaccard on 5 perufmes
     jaccard = build_perf_sims_jac(num_perfumes, perf_data)
     jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, perf_data)
 
-    # if len(rel_list) == 0 and len(irrel_list) == 0: 
-        # result = results(jacc_ranked, perfume_json)
-        # result = initial_search(jacc_ranked, perfume_json)
-    # else: 
-    cos_ranked = with_rocchio(rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
+    # if len(rel_list) == 0 and len(irrel_list) == 0:
+    # result = results(jacc_ranked, perfume_json)
+    # result = initial_search(jacc_ranked, perfume_json)
+    # else:
+    cos_ranked = with_rocchio(
+        rel_tuple, irrel_tuple, perfume_by_term, name_to_index, index_to_id, rocchio)
     combined_ranked = scores(jacc_ranked, cos_ranked, index_to_id)
     result = results(combined_ranked, perfume_json, name)
 
@@ -410,9 +418,6 @@ def check_query(input_query, perf_json):
     return "Sorry, no results found. Check your spelling or try a different perfume."
 
 
-
-
-
 def build_perf_sims_jac(n_perf, input_data):
     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
@@ -490,6 +495,7 @@ def initial_search(top_5, perf_json):
         final.append(info)
     return final
 
+
 def results(top_5, perf_json, query_perf_name):
     """
         Take in list of top 5 perfumes ids and get the corresponding info
@@ -510,12 +516,13 @@ def results(top_5, perf_json, query_perf_name):
         info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
         info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
         info["desc"] = perf_json["description"][top_5[i][0]]
-        keyword_list = get_common_keywords(query_perf_name, perf_json["name"][top_5[i][0]])
+        keyword_list = get_common_keywords(
+            query_perf_name, perf_json["name"][top_5[i][0]])
         keyword_str = ""
         for word in keyword_list:
             if keyword_str == "":
                 keyword_str = keyword_str + word
-            else: 
+            else:
                 keyword_str = keyword_str + ", " + word
         info["similarkeyword"] = keyword_str
         final.append(info)
@@ -533,16 +540,16 @@ def results(top_5, perf_json, query_perf_name):
 #     Parameters
 #     ----------
 #     max_features : int
-#         Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer 
+#         Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer
 #         constructer.
 #     stop_words : str
-#         Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer. 
+#         Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer.
 #     max_df : float
-#         Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer. 
+#         Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer.
 #     min_df : float
-#         Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer. 
+#         Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer.
 #     norm : str
-#         Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer. 
+#         Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer.
 
 #     Returns
 #     -------
@@ -651,12 +658,13 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
         q_norm = np.linalg.norm(doc)
         d_norm = np.linalg.norm(update)
         # fix div by zero error
-        norm_prod = q_norm*d_norm if q_norm*d_norm !=0 else .0001
+        norm_prod = q_norm*d_norm if q_norm*d_norm != 0 else .0001
         sim.append(dots/(norm_prod))
 
     # indexes = np.argsort(sim)[::-1]
     # indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
-    sim = sim[:perf_name_to_index[relevant_in[0]]] + sim[perf_name_to_index[relevant_in[0]]+1:]
+    sim = sim[:perf_name_to_index[relevant_in[0]]] + \
+        sim[perf_name_to_index[relevant_in[0]]+1:]
 
     perfumes = []
     for ind in range(len(perf_name_to_index)-1):
@@ -678,6 +686,12 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
         [(perf1, score1), (perf2, score2)..., (perf10,score10)]
     """
 
+    print("Jaccard_in: ")
+    print(jaccard_in)
+
+    print("Cosine_in: ")
+    print(cosine_in)
+
     jac = []
     for tup in jaccard_in:
         jac.append(float(tup[1]))
@@ -686,8 +700,13 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
     for tup in cosine_in:
         cos.append(float(tup[1]))
 
-    jac = np.asarray(jac, dtype = 'float64')
-    cos = np.asarray(cos, dtype= 'float64')
+    jac = np.asarray(jac, dtype='float64')
+    cos = np.asarray(cos, dtype='float64')
+
+    print("Jac: ")
+    print(jac)
+    print("Cos: ")
+    print(cos)
 
     scores = np.multiply(jac, cos)
     indexes = np.argsort(scores)[::-1]
@@ -698,9 +717,6 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
             (perf_index_to_id[indexes[ind]], scores[indexes[ind]]))
 
     return perfumes
-
-
-
 
     # IGNORE THIS
 
@@ -728,7 +744,6 @@ def scores(jaccard_in, cosine_in, perf_index_to_id):
 #                 res[note] = []
 #             res[note].append(i)
 #     return res
-
 
     # funcctions for cosine sim
 
