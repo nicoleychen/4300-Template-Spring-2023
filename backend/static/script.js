@@ -141,8 +141,8 @@ function returnResults() {
   displayLoading();
   console.log('loading!')
   
-  like_list.map(like => searchParam.append('rel_list', like))
-  dislike_list.map(dislike => searchParam.append('irrel_list', dislike))
+  like_list.map(like => searchParam.append("rel_list", like))
+  dislike_list.map(dislike => searchParam.append("irrel_list", dislike))
 
   fetch(
     '/similar?' + searchParam.toString()
@@ -253,6 +253,7 @@ function resultTemplate(
       sad_button = "sad_filled.png";
     }
   }
+  name_esc = name.replaceAll('\'', '\\\'')
   // name = JSON.stringify(name).replace(/&/, "&amp;").replace(/'/g, "&quot;")
   return `<div class='result-card'>
         <img src=${img} class='fragrance-img'>
@@ -275,7 +276,7 @@ function resultTemplate(
           </div>
          </p>
         <p class='fragrance-detail'>Description: ${desc}</p>
-        <p class='fragrance-detail'> Here are similar keywords from reviews of your query and this result: </p>
+        <p class='fragrance-detail'> Here are similar keywords from customer reviews of your query and this result: </p>
         <div class='keyword-box'> 
           <div class="keyword">${similarkeyword[0]}</div>
           <div class="keyword">${similarkeyword[1]}</div>
@@ -289,10 +290,10 @@ function resultTemplate(
           <div class="keyword">${similarkeyword[9]}</div>
         </div>
         <div class="vote-button-group">
-          <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name}\', 1)" id="like-button-${name}">
+          <button class="vote_button" type="submit" ${like_disabled} onclick="updateRelevance(\'${name_esc}\', 1)" id="like-button-${name}">
             <img src="/static/images/${happy_button}" id="like-${name}" alt="Like"/>
           </button>
-          <button class="vote_button" type="submit" ${dislike_disabled} onclick="updateRelevance(\'${name}\', -1)" id="dislike-button-${name}">
+          <button class="vote_button" type="submit" ${dislike_disabled} onclick="updateRelevance(\'${name_esc}\', -1)" id="dislike-button-${name}">
             <img src="/static/images/${sad_button}" id="dislike-${name}" alt="Dislike"/>
           </button>
         </div>
