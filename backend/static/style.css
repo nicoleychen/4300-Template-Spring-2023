@@ -40,14 +40,15 @@ body {
 .findMyFragrance-title{
     display: flex;
     align-items: center;
+    justify-content: baseline;
     font-size: 35px;
     font-family: 'Open Sans', sans-serif;
     color: #F0AFAD;
 }
 
 .findMyFragrance-title h1{
-    margin-bottom: 0;
     margin-right: 3px;
+    margin-bottom: 0;
 }
 
 .input-box{
@@ -305,4 +306,22 @@ body {
     font-family: 'Open Sans', sans-serif;
     margin: 20px;
     font-style: italic;
+}
+
+.diamond-img{
+    display:inline-block;
+    align-self:last baseline;
+    padding-bottom: 15px;
+    width: 55px;
+    height: 60px;
+}
+
+.diamond-image-left{
+    display:inline-block;
+    width: 55px;
+    height: 60px;
+    align-self:last baseline;
+    padding-right: 10px;
+    padding-bottom: 15px;
+
 }
