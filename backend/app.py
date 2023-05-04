@@ -67,7 +67,7 @@ def episodes_search():
 
 # JJ: function that opens json file
 def load_perfume_data():
-    f = open('perfumes_combined_0_299.json')
+    f = open('perfumes_combined_0_499.json')
     data = json.load(f)
     print("JSON succesfully loaded!")
     f.close()
@@ -550,9 +550,9 @@ def results(ranked_ids, perf_json, query_perf_name, top_k):
         info["topnote"] = perf_json["top notes"][ranked_ids[i][0]]
         info["middlenote"] = perf_json["middle notes"][ranked_ids[i][0]]
         info["bottomnote"] = perf_json["base notes"][ranked_ids[i][0]]
-        description = perf_json["description"][ranked_ids[i][0]]
-        no_languages = description[:description.find('Read')]
-        info["desc"] = no_languages
+        # description = perf_json["description"][ranked_ids[i][0]]
+        # no_languages = description[:description.find('Read')]
+        info["desc"] = perf_json["description"][ranked_ids[i][0]]
 
         keyword_list = get_common_keywords(
             query_perf_name, perf_json["name"][ranked_ids[i][0]])
