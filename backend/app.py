@@ -1,11 +1,4 @@
-# from IPython.core.display import HTML
-# from nltk.tokenize import TreebankWordTokenizer
 import numpy as np
-# import time
-# import string
-# import math
-# from collections import Counter
-# from collections import defaultdict
 import json
 import os
 from flask import Flask, render_template, request
@@ -33,34 +26,13 @@ MYSQL_DATABASE = "findmyfragrance_db"
 mysql_engine = MySQLDatabaseHandler(
     MYSQL_USER, MYSQL_USER_PASSWORD, MYSQL_PORT, MYSQL_DATABASE)
 
-# Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
-# mysql_engine.load_file_into_db()
-
 app = Flask(__name__)
 CORS(app)
-
-# Sample search, the LIKE operator in this case is hard-coded,
-# but if you decide to use SQLAlchemy ORM framework,
-# there's a much better and cleaner way to do this
-
-
-def sql_search(episode):
-    query_sql = f"""SELECT * FROM episodes WHERE LOWER( title ) LIKE '%%{episode.lower()}%%' limit 10"""
-    keys = ["id", "title", "descr"]
-    data = mysql_engine.query_selector(query_sql)
-    return json.dumps([dict(zip(keys, i)) for i in data])
 
 
 @app.route("/")
 def home():
     return render_template('base.html', title="sample html")
-
-
-@app.route("/episodes")
-def episodes_search():
-    text = request.args.get("title")
-    return sql_search(text)
-
 
 # TODO: add def
 # app.run(debug=True)
@@ -76,15 +48,6 @@ def load_perfume_data():
 
 perfume_json = load_perfume_data()
 
-
-# creating tfidf matrix
-# def load_sample_data():
-#     f = open('perfume_combined_0_150.json')
-#     data = json.load(f)
-#     print("JSON succesfully loaded!")
-#     f.close()
-#     return data
-
 def format_json(j):
     reviews = j["reviews"]
     perf_list = []
@@ -97,10 +60,7 @@ def format_json(j):
 
     return perf_list
 
-# *ONLY FOR IDS IN ids* loop through all the top middle bottom notes,
 # returns a list of dictionaries that represent {'id' :perfume id, 'notes' : list of notes}
-
-
 def perfume_json_to_all_notes(perfume_json, ids):
     top_note_json = perfume_json['top notes']
     middle_note_json = perfume_json['middle notes']
@@ -223,10 +183,7 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
     return v
 
 
-# example_json = load_sample_data()
 formatted_data = format_json(perfume_json)
-# review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
-# using default values instead
 stopwords_list = requests.get(
     "https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt").content
 stopwords = set(stopwords_list.decode().splitlines())
@@ -239,9 +196,6 @@ all_ids = list(perfume_json["name"].keys())
 all_perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
 name_to_index = perfume_name_to_index(all_perf_data)
 index_to_id = perfume_index_to_id(all_perf_data)
-# name_to_id = perfume_name_to_id(all_perf_data)
-
-# search autocomplete
 
 
 @app.route("/suggestion/perf")
@@ -251,8 +205,6 @@ def suggest_perf():
     return perfume_name_suggest(text)
 
 # checks if query is in dataset or not
-
-
 @app.route("/testing")
 def testing_search():
     query = request.args.get("name")
@@ -290,13 +242,6 @@ def get_query_info():
 
     return json.dumps(info)
 
-
-@app.route("/rocchio")
-def new_results():
-
-    pass
-
-
 # this is main route combining query and gender preference
 @app.route("/similar")
 def similar_search():
@@ -328,24 +273,11 @@ def similar_search():
     rated_ids = rating_threshold_filter(
         perfume_json, gendered_ids, min_rating)
 
-    print("rated_ids BEFORE:")
-    print(rated_ids)  # list of strings
-    # print(type(rated_ids[0]))
-
     query_id = str(index_to_id[name_to_index[name]])
-    print("query_id:")
-    print(query_id)
-    # print(type((str(query_id))))
 
     if not (query_id in rated_ids):
         rated_ids.append(query_id)
         rated_ids = sorted(rated_ids,  key=lambda x: int(x))
-
-    print("rated_ids AFTER:")
-    print(rated_ids)
-
-    # rated_ids = rated_ids.append(str(query_id))
-    # print(rated_ids)
 
     # 3. jaccard sim filter
     num_perfumes = len(rated_ids)
@@ -382,7 +314,6 @@ DO NOT DELETE: CODE FROM https://github.com/Y1chenYao/thank-u-next-cornell-prof-
 note: functions for edit distance in dropdowns
 """
 
-
 def perfume_name_suggest(input_perf):
     perf_scores = {}
     perf_name_list = get_perfume_names(perfume_json)
@@ -393,30 +324,6 @@ def perfume_name_suggest(input_perf):
     sorted_perfs = sorted(perf_scores.items(),
                           key=lambda x: x[1], reverse=True)[:5]
     return json.dumps([perf[0] for perf in sorted_perfs])
-
-
-# NC: gets input gender preference from frontend and returns it
-# @app.route("/gender_pref")
-# def gender_search():
-#     query = request.args.get("gender")
-#     print("gender query: " + str(query))
-#     pref = ""
-#     # men
-#     if query == "male":
-#         pref = "for men"
-#     # women, idk why it's on but i'm j rolling w it
-#     elif query == "on":
-#         pref = "for women"
-#     # no pref
-#     else:
-#         pref = "for women and men"
-#     gender = pref
-#     return json.dumps(pref)
-
-# NC: uses gender_search to filter by input gender preference.
-# Takes in perfume_data JSON and a list of ids that correspond to perfumes.
-# Returns a list of filtered ids that correspond to the input gender preference.
-
 
 def gender_filter(perfume_data, perfume_ids, gender_filter):
     # set query to result of gender search somehow, this doesn't work
@@ -436,10 +343,6 @@ def rating_threshold_filter(perfume_data, perfume_ids, threshold):
         if (perfume_data["rating"][str(id)]) != "NA" and float(perfume_data["rating"][str(id)]) > float(threshold):
             res.append(id)
     return res
-
-# THIS IS THE FILTERED PERFUME DATA TO USE
-
-# get query perfume
 
 
 def check_query(input_query, perf_json):
@@ -472,13 +375,9 @@ def build_perf_sims_jac(n_perf, input_data):
                     perf_sims[i][j] = 0
                 else:
                     perf_sims[i][j] = intersect/union
-    print("jac shape: ")
-    print(perf_sims.shape)
     return perf_sims
 
 # rank all perfumes, and return top 3
-
-
 def get_ranked_perfumes(perfume, matrix, filtered_perf_index_to_id, filtered_perf):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
@@ -500,36 +399,7 @@ def get_ranked_perfumes(perfume, matrix, filtered_perf_index_to_id, filtered_per
     # Do not account for movie itself in ranking
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
     # Sort rankings by score
-    # perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
     return perf_score_lst
-
-# get the necessary information
-
-
-# def initial_search(top_5, perf_json):
-#     """
-#         Take in list of top 5 perfumes ids and get the corresponding info
-#         input_dict: list of dictionaries for each perfume - perf_dict
-
-#         Returns:
-#     """
-
-#     top_5 = sorted(top_5, key=lambda x: -x[1])
-#     final = []
-#     for i in range(5):
-#         info = {}
-#         info["img"] = perf_json["image"][top_5[i][0]]
-#         info["gender"] = perf_json["for_gender"][top_5[i][0]]
-#         info["name"] = perf_json["name"][top_5[i][0]]
-#         info["brand"] = perf_json["company"][top_5[i][0]]
-#         info["rating"] = perf_json["rating"][top_5[i][0]]
-#         info["gender"] = perf_json["for_gender"][top_5[i][0]]
-#         info["topnote"] = perf_json["top notes"][top_5[i][0]]
-#         info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
-#         info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
-#         info["desc"] = perf_json["description"][top_5[i][0]]
-#         final.append(info)
-#     return final
 
 
 def results(ranked_ids, perf_json, query_perf_name, top_k):
@@ -566,38 +436,6 @@ def results(ranked_ids, perf_json, query_perf_name, top_k):
         # info["similarkeyword"] = keyword_str
         final.append(info)
     return final
-
-# functioons for roccchio
-# def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2'):
-#     """Returns a TfidfVectorizer object with the above preprocessing properties.
-#         The term document matrix of the perfume reviews input_doc_mat[i][j] is the tfidf
-#         of the perfume i for the word j.
-
-#     Note: This function may log a deprecation warning. This is normal, and you
-#     can simply ignore it.
-
-#     Parameters
-#     ----------
-#     max_features : int
-#         Corresponds to 'max_features' parameter of the sklearn TfidfVectorizer
-#         constructer.
-#     stop_words : str
-#         Corresponds to 'stop_words' parameter of the sklearn TfidfVectorizer constructer.
-#     max_df : float
-#         Corresponds to 'max_df' parameter of the sklearn TfidfVectorizer constructer.
-#     min_df : float
-#         Corresponds to 'min_df' parameter of the sklearn TfidfVectorizer constructer.
-#     norm : str
-#         Corresponds to 'norm' parameter of the sklearn TfidfVectorizer constructer.
-
-#     Returns
-#     -------
-#     TfidfVectorizer
-#         A TfidfVectorizer object with the given parameters as its preprocessing properties.
-#     """
-#     v = TfidfVectorizer(max_features=max_features, stop_words=stop_words,
-#                         max_df=max_df, min_df=min_df, norm=norm)
-#     return v
 
 
 def rocchio(perf, relevant, irrelevant, input_doc_matrix,
@@ -699,9 +537,6 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
         # fix div by zero error
         norm_prod = q_norm*d_norm if q_norm*d_norm != 0 else .0001
         sim.append(dots/(norm_prod))
-
-    # indexes = np.argsort(sim)[::-1]
-    # indexes = indexes[indexes != perf_name_to_index[relevant_in[0]]]
     sim = sim[:perf_name_to_index[relevant_in[0]]] + \
         sim[perf_name_to_index[relevant_in[0]]+1:]
 
@@ -725,12 +560,6 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n):
         [(perf1, score1), (perf2, score2)..., (perf10,score10)]
     """
 
-    print("Jaccard_in: ")
-    print(jaccard_in)
-
-    print("Cosine_in: ")
-    print(cosine_in)
-
     # score matrix where score_mat[0][i] contains jaccard sim score of perfume with id i
     # and score_mat[1][j] contains cosine sim score of perfume with id j
     # use 1000 for now to prevent index out of bound error
@@ -738,33 +567,14 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n):
 
     # jac = []
     for tup in jaccard_in:
-        # jac.append(float(tup[1]))
-        print("adding a tuple of jaccard_in:")
-        print(tup[0], tup[1])
         score_mat[0][int(tup[0])] = tup[1]
 
     # cos = []
     for tup in cosine_in:
-        # cos.append(float(tup[1]))
         score_mat[1][int(tup[0])] = tup[1]
 
-    # jac = np.asarray(jac, dtype='float64')
-    # cos = np.asarray(cos, dtype='float64')
-
-    # print("Jac: ")
-    # print(jac)
-    # print("Cos: ")
-    # print(cos)
-
-    print("score_mat[0]")
-    print(score_mat[0][:])
-
-    print("score_mat[1]")
-    print(score_mat[1][:])
 
     scores = np.multiply(score_mat[0],  score_mat[1])
-    print("Scores:")
-    print(scores)
 
     perfumes = []
     for id, score in enumerate(scores):
@@ -772,410 +582,6 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n):
 
     perfumes_sorted = sorted(perfumes, key=lambda x: -x[1])
 
-    # scores = np.multiply(jac, cos)
-    # indexes = np.argsort(scores)[::-1]
-
-    # perfumes = []
-    # for ind in range(len(jaccard_in)):
-    #     perfumes.append(
-    #         (perf_index_to_id[indexes[ind]], scores[indexes[ind]]))
-
     return perfumes_sorted
 
-    # IGNORE THIS
-
-# def build_inverted_index(filtered_perf):
-#     """ Builds an inverted index from the perfume name and notes.
-#     Arguments
-#     =========
-#     database: list of dicts.
-#         Each perfume in this list already has a 'notes'
-#         field that contains the tokenized notes.
-#     Returns
-#     =======
-#     inverted_index: dict
-#         For each note, the index contains
-#         a list of that stores all the perfume_id with that note.
-#         inverted_index[note] = [p1, p2, p3]
-#     """
-#     res = {}
-#     for i in range(len(filtered_perf)):
-#         id = database[i]
-#         notes = database['notes']
-#         notes_set = set(notes)
-#         for note in notes_set:
-#             if note not in res:
-#                 res[note] = []
-#             res[note].append(i)
-#     return res
-
-    # funcctions for cosine sim
-
-    # def build_query_word_counts(input):
-    #     """ Builds an query_word_wounts from the messages.
-    #     Arguments
-    #     =========
-
-    #     input: 1 string of a description
-
-    #     Returns
-    #     =======
-
-    #     query_word_counts: dictionary
-    #         For each term, the index contains
-    #         1 item that represents the count of
-    #         the term in the query  ==> count_of_term_in_doc
-    #         query_word_counts[term] = count_of_term_in_doc
-
-    #     """
-    #    tokens = tokenizer.tokenize(input.lower())
-    #     query_word_counts = {}
-
-    #     for word in tokens:
-    #         if word in query_word_counts:
-    #             query_word_counts[word] += 1
-    #         else:
-    #             query_word_counts[word] = 1
-
-    # def build_inverted_index(reviews):
-    #     """ Builds an inverted index from the reviews of the desired perfume.
-
-    #     Arguments
-    #     =========
-
-    #     reviews: list of dictionaries
-    #         Each message in this list already has a 'toks'
-    #         field that contains the tokenized message.
- #         [{1: { "toks: ["I", "love", "u"]}}, {2 : {"toks:["I", "hate", "u"]}, ...]
-    #     Returns
-    #     =======
-
-    #     inverted_index: dict
-    #         For each term, the index contains
-    #         a sorted list of tuples (doc_id, count_of_term_in_doc)
-    #         such that tuples with smaller doc_ids appear first:
-    #         inverted_index[term] = [(d1, tf1), (d2, tf2), ...]
-
-    #     Example
-    #     =======
-
-    #     >> test_idx = build_inverted_index([
-    #     ...    {'toks': ['to', 'be', 'or', 'not', 'to', 'be']},
-    #     ...    {'toks': ['do', 'be', 'do', 'be', 'do']}])
-
-    #     >> test_idx['be']
-    #     [(0, 2), (1, 2)]
-
-    #     >> test_idx['not']
-    #     [(0, 1)]
-
-    #     """
-    #     # YOUR CODE HERE
-    #     inverted_idx = {}
-
-    #     for doc in range(len(reviews)-1):
-    #         tokens = reviews[doc]["toks"]
-    #         for word in tokens:
-    #             if word in inverted_idx:
-    #                 if doc in inverted_idx[word]:
-    #                     inverted_idx[word][doc] += 1
-    #                 else:
-    #                     inverted_idx[word][doc] = 1
-    #             else:
-    #                 inverted_idx[word] = {}
-    #                 inverted_idx[word][doc] = 1
-
-    #     sort_inverted_idx = {}
-    #     for word in inverted_idx:
-    #         sort_list = list(inverted_idx[word].items())
-    #         sort_list.sort(key=lambda i:i[0])
-    #         sort_inverted_idx[word] = sort_list
-
-    #     return sort_inverted_idx
-
-    # def compute_idf(inv_idx, n_reviews, min_df=10, max_df_ratio=0.95):
-    #     """ Compute term IDF values from the inverted index.
-    #     Words that are too frequent or too infrequent get pruned.
-    #     Hint: Make sure to use log base 2.
-    #     Arguments
-    #     =========
-
-    #     inv_idx: an inverted index as above
-    #     n_docs: int,
-    #         The number of documents.
-    #     min_df: int,
-    #         Minimum number of documents a term must occur in.
-    #         Less frequent words get ignored.
-    #         Documents that appear min_df number of times should be included.
-    #     max_df_ratio: float,
-    #         Maximum ratio of documents a term can occur in.
-    #         More frequent words get ignored.
-    #     Returns
-    #     =======
-
-    #     idf: dict
-    #         For each term, the dict contains the idf value.
-
-    #     """
-
-    #     # YOUR CODE HERE
-    #     idf = {}
-
-    #     for term in inv_idx:
-    #         df = len(inv_idx[term])
-    #         if df >= min_df and df/n_reviews <= max_df_ratio:
-    #             ratio = n_reviews/(1+df)
-    #             idf[term] = np.log2(ratio)
-
-    #     return idf
-
-    # def compute_doc_norms(index, idf, n_reviews):
-    #     """ Precompute the euclidean norm of each document.
-    #     Arguments
-    #     =========
-    #     index: the inverted index as above
-    #     idf: dict,
-    #         Precomputed idf values for the terms.
-    #     n_docs: int,
-    #         The total number of documents.
-    #     Returns
-    #     =======
-    #     norms: np.array, size: n_docs
-    #         norms[i] = the norm of document i.
-    #     """
-
-    #     # YOUR CODE HERE
-    #     sums = np.zeros(n_reviews)
-    #     for word in index:
-    #         for (doc, tf) in index[word]:
-    #             if word in idf:
-    #                 sums[doc] += (tf*idf[word])**2
-    #     norms = np.sqrt(sums)
-    #     return norms
-
-    # def accumulate_dot_scores(query_word_counts, index, idf):
-    #     """ Perform a term-at-a-time iteration to efficiently compute the numerator term of cosine similarity across multiple documents.
-    #     Arguments
-    #     =========
-
-    #     query_word_counts: dict,
-    #         A dictionary containing all words that appear in the query;
-    #         Each word is mapped to a count of how many times it appears in the query.
-    #         In other words, query_word_counts[w] = the term frequency of w in the query.
-    #         You may safely assume all words in the dict have been already lowercased.
-
-    #     index: the inverted index as above,
-
-    #     idf: dict,
-    #         Precomputed idf values for the terms.
-
-    #     Returns
-    #     =======
-
-    #     doc_scores: dict
-    #         Dictionary mapping from doc ID to the final accumulated score for that doc
-    #     """
-
-    #     doc_scores = {}
-
-    #     for word in query_word_counts:
-    #         if word in index:
-    #             for (doc, tf) in index[word]:
-    #                 if doc in doc_scores:
-    #                     doc_scores[doc] += (query_word_counts[word] * idf[word]) * (tf * idf[word])
-    #                 else:
-    #                     doc_scores[doc] = (query_word_counts[word] * idf[word]) * (tf * idf[word])
-
-    #     return doc_scores
-
-    # def index_search(query, index, idf, doc_norms, score_func=accumulate_dot_scores, tokenizer=treebank_tokenizer):
-    #     """ Search the collection of documents for the given query
-
-    #     Arguments
-    #     =========
-
-    #     query: string,
-    #         The query we are looking for.
-
-    #     index: an inverted index as above
-
-    #     idf: idf values precomputed as above
-
-    #     doc_norms: document norms as computed above
-
-    #     score_func: function,
-    #         A function that computes the numerator term of cosine similarity (the dot product) for all documents.
-    #         Takes as input a dictionary of query word counts, the inverted index, and precomputed idf values.
-    #         (See Q7)
-
-    #     tokenizer: a TreebankWordTokenizer
-
-    #     Returns
-    #     =======
-
-    #     results, list of tuples (score, doc_id)
-    #         Sorted list of results such that the first element has
-    #         the highest score, and `doc_id` points to the document
-    #         with the highest score.
-
-    #     Note:
-
-    #     """
-
-    #     tokens = tokenizer.tokenize(query.lower())
-    #     query_word_counts = {}
-
-    #     for word in tokens:
-    #         if word in query_word_counts:
-    #             query_word_counts[word] += 1
-    #         else:
-    #             query_word_counts[word] = 1
-
-    #     scores = score_func(query_word_counts, index, idf)
-
-    #     q_norm = 0
-    #     for word in query_word_counts:
-    #         if word in idf:
-    #             q_norm += (query_word_counts[word]*idf[word])**2
-    #     q_norm = np.sqrt(q_norm)
-
-    #     for i in scores:
-    #         scores[i] = scores[i]/(doc_norms[i]*q_norm)
-
-    #     final_scores = []
-    #     for tup in list(scores.items()):
-    #         final_scores.append(tuple(reversed(tup)))
-
-    #     final_scores.sort(key=lambda item: item[0], reverse=True)
-
-    #     return final_scores[:5]
-
-    # rev_results(top_5, perf_json)
-    # """
-    #     Take in list of top 5 perfumes ids and get the corresponding info
-    #     top_5: list of dictionaries for each perfume - perf_dict
-
-    #     Returns:
-    # """
-    # final = []
-    # for i in range(len(top_5)):
-    #     info = {}
-    #     info["img"] = perf_json["image"][top_5[i][0]]
-    #     info["gender"] = perf_json["for_gender"][top_5[i][0]]
-    #     info["name"] = perf_json["name"][top_5[i][0]]
-    #     info["brand"] = perf_json["company"][top_5[i][0]]
-    #     info["rating"] = perf_json["rating"][top_5[i][0]]
-    #     info["gender"] = perf_json["for_gender"][top_5[i][0]]
-    #     info["topnote"] = perf_json["top notes"][top_5[i][0]]
-    #     info["middlenote"] = perf_json["middle notes"][top_5[i][0]]
-    #     info["bottomnote"] = perf_json["base notes"][top_5[i][0]]
-    #     info["desc"] = perf_json["description"][top_5[i][0]]
-    #     info
-    #     final.append(info)
-    # return final
-
-    #     final = []
-    #     perf_dict = {}
-    # inner_dict = {}
-    #     for row in database:
-    #         inner_dict["brand"] = row["Brand"]
-    #         inner_dict["description"] = row["Description"]
-    #         inner_dict["notes"] = row["Notes"]
-    # perf_dict[row["Name"]] = inner_dict
-    #     final.append(perf_dict)
-    # create perfume name to index, index to name ??
-    # perfume_id_to_index = {perfume_id:index for index, perfume_id in enumerate([d['perfume_id'] for d in data])}
-    # perfume_name_to_id = {name:pid for name, pid in zip([d['Name'] for d in data],
-    #                                                      [d['perfume_id'] for d in data])}
-    # perfume_id_to_name = {v:k for k,v in perfume_name_to_id.items()}
-    # perfume_name_to_index = {name:perfume_id_to_index[perfume_name_to_id[name]] for name in [d['perfume_name'] for d in data]}
-    # perfume_index_to_name = {v:k for k,v in perfume_name_to_index.items()}
-    # perfume_names = [name for name in [d['perfume_name'] for d in data]]
-    # get query perfume
-    # def check_query(input_query)
-    # query = input_query.lower()
-    # if query in perfume_names:
-    #     return query
-    # else:
-    #     return "Sorry, no results found".
-    # query_perfume = check_query(query)
-    # def build_inverted_index(database):
-    #     """ Builds an inverted index from the perfume name and notes.
-    #     Arguments
-    #     =========
-    #     database: list of dicts.
-    #         Each perfume in this list already has a 'notes'
-    #         field that contains the tokenized notes.
-    #     Returns
-    #     =======
-    #     inverted_index: dict
-    #         For each note, the index contains
-    #         a list of that stores all the perfume_id with that note.
-    #         inverted_index[note] = [p1, p2, p3]
-    #     """
-    #     res = {}
-    #     for i in range(len(database)):
-    #         id = database[i]
-    #         notes = database['perfume_notes']
-    #         notes_set = set(notes)
-    #         for note in notes_set:
-    #             if note not in res:
-    #                 res[note] = []
-    #             res[note].append(i)
-    #     return res
-    # create jaccard similarity matrix
-    # def build_perf_sims_jac(n_perf, input_data):
-    #     """Returns a perf_sims_jac matrix of size (perf_movies,perf_movies) where for (i,j) :
-    #         [i,j] should be the jaccard similarity between the category sets (notes) for perfumes i and j
-    #         such that perf_sims_jac[i,j] = perf_sims_jac[j,i].
-    #     Params: {n_perf: Integer, the number of perfumes,
-    #             input_data: List<Dictionary>, a list of dictionaries where each dictionary
-    #                      represents the perfume_data including the perfume and the metadata of each perfume}
-    #     Returns: Numpy Array
-    #     """
-    #     perf_sims = np.zeros((n_perf, n_perf))
-    #     for i in range(n_perf):
-    #         for j in range(n_perf):
-    #             if i==j:
-    #                 perf_sims[i][j] = 1.0
-    #             else:
-    #                 category_1 = set(input_data[i]["notes"])
-    #                 category_2 = set(input_data[j]["notes"])
-    #                 intersect = len(category_1.intersection(category_2))
-    #                 union = len(category_1.union(category_2))
-    #                 perf_sims[i][j] = intersect/union
-    #     return perf_sims
-    # #rank all movies, and return top 3
-    # def get_ranked_movies(perfume, matrix):
-    #     """
-    #     Return sorted rankings (most to least similar) of perfumes as
-    #     a list of two-element tuples, where the first element is the
-    #     perfume name and the second element is the similarity score
-    #     Params: {perfume: String,
-    #              matrix: np.ndarray}
-    #     Returns: List<Tuple>
-    #     """
-    #     # Get movie index from movie name
-    #     perf_idx = perfume_name_to_index[perfume]
-    #     # Get list of similarity scores for movie
-    #     score_lst = matrix[perf_idx]
-    #     perf_score_lst = [(perf_index_to_name[i], s) for i,s in enumerate(score_lst)]
-    #     # Do not account for movie itself in ranking
-    #     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
-    #     # Sort rankings by score
-    #     perf_score_lst = sorted(perf_score_lst, key=lambda x: -x[1])
-    #     print("Top {} most similar movies to {} [{}]".format(k, 'star wars'))
-    #     print("======")
-    #     for (mov, score) in perf_score_lst[:3]:
-    #         print("%.3f %s" % (score, mov))
-    # return top_3 = perf_score_lst[:3]
-    # get the necessary information
-    # def results(top_3, input_dict):
-    #     """
-    #         Take in list of top 3 movies and get the correspoiding info
-    # input_dict: list of dictionaries for each perfume - perf_dict
-    #     """
-    # dicts = []
-    #     for i in top 3:
-    # dicts.append(input_dict[i])
-    # return dicts
+   

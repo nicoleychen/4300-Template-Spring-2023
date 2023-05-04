@@ -5,23 +5,6 @@ function init() {
 window.onload = init();
 console.log("Window onload is", window.onload);
 
-// creates API request every time a gender pref is selected
-// if (document.querySelector('input[name="gender"]')) {
-//   document.querySelectorAll('input[name="gender"]').forEach((elem) => {
-//     elem.addEventListener("change", function(event) {
-//     var gender = event.target.value;
-//     fetch("/gender_pref?" + new URLSearchParams({ gender: gender }).toString())
-//     .then(function (response){
-//       return response.json();
-//     }).then(function (data) {
-//       console.log(data);
-//     }).catch(function (err){
-//       console.warn("Something went wrong.", err);
-//     });
-//      });
-//   });
-// }
-
 const button = document.getElementById('search-button')
 const perfSearchBox = document.querySelector("#perf-search-box")
 const perfAutoBox = document.querySelector("#perf-auto-box")
@@ -57,9 +40,6 @@ function returnResults_search(){
 
 function returnResults() {
   console.log("returnResults is called!")
-
-  // const removeText = document.getElementsByClassName("no-result");
-  // removeText[0].parentNode.removeChild(removeText[0]);
 
   const removeBoxes = document.getElementsByClassName('result-card')
   while (removeBoxes.length > 0) {
@@ -146,13 +126,6 @@ function returnResults() {
 
   fetch(
     '/similar?' + searchParam.toString()
-      // new URLSearchParams({
-      //   name: query,
-      //   gender_pref: gender_filter,
-      //   min_rating: min_rating_input,
-      //   rel_list: like_list,
-      //   irrel_list: dislike_list
-      // }).toString()
   )
     .then(function (response) {
       // The API call was successful!
@@ -211,17 +184,17 @@ function queryTemplate(
         <p class = 'fragrance-detail'> Rating: ${rating}</p> 
         <p class = 'fragrance-detail'> Gender: ${gender}</p> 
         <p class = 'fragrance-detail'> Top notes: 
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(topnote)}
           </div>
         </p>
         <p class = 'fragrance-detail'> Middle notes:  
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(middlenote)}
           </div>
         </p>
         <p class = 'fragrance-detail'> Base notes: </p>
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(bottomnote)}
           </div>
          </p>
@@ -261,21 +234,23 @@ function resultTemplate(
         <p class = 'fragrance-detail'> Rating: ${rating}</p> 
         <p class = 'fragrance-detail'> Gender: ${gender}</p> 
         <p class = 'fragrance-detail'> Top notes: 
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(topnote)}
           </div>
         </p>
         <p class = 'fragrance-detail'> Middle notes:  
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(middlenote)}
           </div>
         </p>
         <p class = 'fragrance-detail'> Base notes: </p>
-          <div class='keyword-box'>
+          <div class='note-box'>
           ${update_notes_list(bottomnote)}
           </div>
          </p>
-        <p class='fragrance-detail'>Description: ${desc}</p>
+         <p>
+         </p>
+        <p class='fragrance-detail description-detail'>Description: ${desc}</p>
         <p class='fragrance-detail'> Here are similar keywords from customer reviews of your query and this result: </p>
         <div class='keyword-box'> 
           <div class="keyword">${similarkeyword[0]}</div>
