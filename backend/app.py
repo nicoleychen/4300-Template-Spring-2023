@@ -185,7 +185,7 @@ def get_common_keywords(perf1, perf2):
         if count == 10:
             break
         word = index_to_vocab[word_id]
-        if not (word.isnumeric()) and diff[word_id]!=0:
+        if not (word.isnumeric()) and diff[word_id] != 0:
             keywords.append(word)
             count += 1
     return keywords
@@ -227,8 +227,9 @@ def build_vectorizer(max_features, stop_words, max_df=0.8, min_df=10, norm='l2')
 formatted_data = format_json(perfume_json)
 # review_vec = build_vectorizer(5000, "english", max_df = 1.0, min_df = 0)
 # using default values instead
-stopwords_list = requests.get("https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt").content
-stopwords = set(stopwords_list.decode().splitlines()) 
+stopwords_list = requests.get(
+    "https://gist.githubusercontent.com/rg089/35e00abf8941d72d419224cfd5b5925d/raw/12d899b70156fd0041fa9778d657330b024b959c/stopwords.txt").content
+stopwords = set(stopwords_list.decode().splitlines())
 review_vec = build_vectorizer(5000, stopwords)
 # create tfidf matrix
 perfume_by_term = review_vec.fit_transform(
@@ -238,6 +239,7 @@ all_ids = list(perfume_json["name"].keys())
 all_perf_data = perfume_json_to_all_notes(perfume_json, all_ids)
 name_to_index = perfume_name_to_index(all_perf_data)
 index_to_id = perfume_index_to_id(all_perf_data)
+# name_to_id = perfume_name_to_id(all_perf_data)
 
 # search autocomplete
 
@@ -323,11 +325,32 @@ def similar_search():
     # 1. gender filter
     gendered_ids = gender_filter(perfume_json, all_ids, gender_pref)
     # 2. rating threshold filter
-    rated_ids = rating_threshold_filter(perfume_json, gendered_ids, min_rating)
+    rated_ids = rating_threshold_filter(
+        perfume_json, gendered_ids, min_rating)
+
+    print("rated_ids BEFORE:")
+    print(rated_ids)  # list of strings
+    # print(type(rated_ids[0]))
+
+    query_id = str(index_to_id[name_to_index[name]])
+    print("query_id:")
+    print(query_id)
+    # print(type((str(query_id))))
+
+    if not (query_id in rated_ids):
+        rated_ids.append(query_id)
+        rated_ids = sorted(rated_ids,  key=lambda x: int(x))
+
+    print("rated_ids AFTER:")
+    print(rated_ids)
+
+    # rated_ids = rated_ids.append(str(query_id))
+    # print(rated_ids)
 
     # 3. jaccard sim filter
     num_perfumes = len(rated_ids)
     perf_data = perfume_json_to_all_notes(perfume_json, rated_ids)
+    filtered_index_to_id = perfume_index_to_id(perf_data)
     # jaccard = build_perf_sims_jac(num_perfumes, perf_data)
     # perfume_ind_to_id = perfume_index_to_id(perf_data)
     # jacc_ranked = get_ranked_perfumes(name, jaccard, perfume_ind_to_id, perf_data)
@@ -338,7 +361,8 @@ def similar_search():
 
     # jaccard on 5 perufmes
     jaccard = build_perf_sims_jac(num_perfumes, perf_data)
-    jacc_ranked = get_ranked_perfumes(name, jaccard, index_to_id, perf_data)
+    jacc_ranked = get_ranked_perfumes(
+        name, jaccard, filtered_index_to_id, perf_data)
 
     # if len(rel_list) == 0 and len(irrel_list) == 0:
     # result = results(jacc_ranked, perfume_json)
@@ -455,7 +479,7 @@ def build_perf_sims_jac(n_perf, input_data):
 # rank all perfumes, and return top 3
 
 
-def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
+def get_ranked_perfumes(perfume, matrix, filtered_perf_index_to_id, filtered_perf):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
     a list of two-element tuples, where the first element is the
@@ -466,10 +490,12 @@ def get_ranked_perfumes(perfume, matrix, perf_index_to_id, filtered_perf):
     Returns: List<Tuple> (id, score)
     """
     # Get movie index from movie name
-    perf_idx = perfume_name_to_index(all_perf_data)[perfume]
+    # perf_idx = perfume_name_to_index(all_perf_data)[perfume]
+    perf_idx = perfume_name_to_index(filtered_perf)[perfume]
+
     # Get list of similarity scores for movie
     score_lst = matrix[perf_idx]
-    perf_score_lst = [(perf_index_to_id[i], s)
+    perf_score_lst = [(filtered_perf_index_to_id[i], s)
                       for i, s in enumerate(score_lst)]
     # Do not account for movie itself in ranking
     perf_score_lst = perf_score_lst[:perf_idx] + perf_score_lst[perf_idx+1:]
@@ -524,7 +550,10 @@ def results(ranked_ids, perf_json, query_perf_name, top_k):
         info["topnote"] = perf_json["top notes"][ranked_ids[i][0]]
         info["middlenote"] = perf_json["middle notes"][ranked_ids[i][0]]
         info["bottomnote"] = perf_json["base notes"][ranked_ids[i][0]]
-        info["desc"] = perf_json["description"][ranked_ids[i][0]]
+        description = perf_json["description"][ranked_ids[i][0]]
+        no_languages = description[:description.find('Read')]
+        info["desc"] = no_languages
+
         keyword_list = get_common_keywords(
             query_perf_name, perf_json["name"][ranked_ids[i][0]])
         info["similarkeyword"] = keyword_list
@@ -683,7 +712,7 @@ def with_rocchio(relevant_in, irrelevant_in, input_doc_matrix,
     return perfumes
 
 
-def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
+def scores(jaccard_in, cosine_in, perf_index_to_id, n):
     """
     Return top 5 of sorted rankings (most to least similar) of perfumes as
     a list of two-element tuples, where the first element is the
@@ -696,20 +725,22 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
         [(perf1, score1), (perf2, score2)..., (perf10,score10)]
     """
 
-    # print("Jaccard_in: ")
-    # print(jaccard_in)
+    print("Jaccard_in: ")
+    print(jaccard_in)
 
-    # print("Cosine_in: ")
-    # print(cosine_in)
+    print("Cosine_in: ")
+    print(cosine_in)
 
     # score matrix where score_mat[0][i] contains jaccard sim score of perfume with id i
     # and score_mat[1][j] contains cosine sim score of perfume with id j
     # use 1000 for now to prevent index out of bound error
-    score_mat = [[0]*1000]*2
+    score_mat = [[0 for i in range(n)] for j in range(2)]
 
     # jac = []
     for tup in jaccard_in:
         # jac.append(float(tup[1]))
+        print("adding a tuple of jaccard_in:")
+        print(tup[0], tup[1])
         score_mat[0][int(tup[0])] = tup[1]
 
     # cos = []
@@ -725,7 +756,15 @@ def scores(jaccard_in, cosine_in, perf_index_to_id, n_perfumes):
     # print("Cos: ")
     # print(cos)
 
+    print("score_mat[0]")
+    print(score_mat[0][:])
+
+    print("score_mat[1]")
+    print(score_mat[1][:])
+
     scores = np.multiply(score_mat[0],  score_mat[1])
+    print("Scores:")
+    print(scores)
 
     perfumes = []
     for id, score in enumerate(scores):
