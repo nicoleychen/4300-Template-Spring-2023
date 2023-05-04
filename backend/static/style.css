@@ -202,7 +202,7 @@ body {
     width:50%;
 }
 
-#rating{
+.filter-rating{
     position: relative;
     font-family: 'Montserrat', sans-serif;
     display: inline;

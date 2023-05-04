@@ -12,9 +12,7 @@
   <div class="full-body-container">
     <div class="top-text">
       <div class="findMyFragrance-title">
-        <img src="{{ url_for('static', filename='images/pink-diamond.png') }}" class="diamond-img" />
         <h1 id="color-pink">FindMyFragrance</h1>
-        <img src="{{ url_for('static', filename='images/pink-diamond.png') }}" class="diamond-img" />
       </div>
       <div id="perf-search-box">
         <div class="input-box">
@@ -43,10 +41,13 @@
         <div id="perf-auto-box"></div>
       </div>
       <div class="explanation-box">
-        <p id="explanation-text"> Note to our users: your results are filtered first by your gender preference & minimum rating, 
-          then the final similarity rank is determined by a combination of 
-          jaccard similarity on notes & cosine similarity of customer reviews. 
-          Liking or disliking a perfume will change your results based on Rocchio's algorithm. </p>
+        <p id="explanation-text">
+          Note to our users: your results are filtered first by your gender
+          preference & minimum rating, then the final similarity rank is
+          determined by a combination of jaccard similarity on notes & cosine
+          similarity of customer reviews. Liking or disliking a perfume will
+          change your results based on Rocchio's algorithm.
+        </p>
       </div>
     </div>
     <div class="filter-container">
@@ -78,7 +79,6 @@
         >
       </div>
       <div class="filter-rating">
-        <!-- <label for="rating">Min. Rating: </label> -->
         <p>Min. Rating:</p>
         <input
           type="number"
@@ -90,7 +90,7 @@
         />
       </div>
     </div>
-    <div class="like-dislike-container"> 
+    <div class="like-dislike-container">
       <h4 class="title" style="margin-left: 20px">Fragrances you liked:</h4>
       <div id="like-list"></div>
       <h4 class="title" style="margin-left: 20px">Fragrances you disliked:</h4>
@@ -102,7 +102,6 @@
     <div id="result-box" class="result-box">
       <div class="result-heading" id="result-heading-text">Search results:</div>
       <div class="loader"></div>
-
     </div>
   </div>
 
